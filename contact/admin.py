@@ -11,17 +11,17 @@ class ContactAdmin(admin.ModelAdmin):
         "last_name",
         "phone",
         "email",
-        "created_date",
         "category",
+        "show",
     
     )
     search_fields = ("first_name", "last_name", "phone", "email")
     list_per_page = 10
     list_max_show_all = 200
-    # list_editable = (
-    #     "first_name",
-    #     "last_name",
-    # )
+    list_editable = (
+        "show",
+    )
+    
     list_display_links = (
         "id",
         "phone",

@@ -38,6 +38,9 @@
     "python.analysis.diagnosticSeverityOverrides": {},
     "python.analysis.typeCheckingMode": "basic",
     "cSpell.enabled": false,
-    "python.analysis.autoImportCompletions": true
+    "python.analysis.autoImportCompletions": true,
+    "emmet.includeLanguages": {
+        "django-html": "html"
+    },
+    "emmet.triggerExpansionOnTab": true
   }
-  

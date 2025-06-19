@@ -1,5 +1,4 @@
-# type: ignore
-# flake8: noqa
+# typing: ignore
 """
 URL configuration for project project.
 
