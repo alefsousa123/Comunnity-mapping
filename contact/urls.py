@@ -10,6 +10,11 @@ urlpatterns = [
         name="contact",
     ),
     path(
+        "search/",
+        views.search,
+        name="search",
+    ),
+    path(
         "",
         views.index,
         name="index",

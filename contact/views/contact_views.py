@@ -1,6 +1,9 @@
 from math import sin
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from contact.models import Contact
+from django.db.models import Q
+from django.core.paginator import Paginator
+
 # from django.http import Http404
 
 
@@ -12,13 +15,52 @@ def index(request):
     e ordena do mais recente para o mais antigo.
     """
     contacts = (
-        Contact.objects
-        .filter(show=True)
+        Contact.objects \
+        .filter(show=True)\
         .order_by("-id")
     )
+    paginator = Paginator(contacts, 10)  # Show 10 contacts per page
+    page_number = request.GET.get('page') # Get the page number from the request
+    page_obj = paginator.get_page(page_number)  # Get the contacts for the requested page
 
     context = {
-        "contacts": contacts,
+        "page_obj": page_obj,
+        "site_title": "Contatos - "
+    }
+
+    return render(
+        request,
+        "contact/index.html",
+        context=context
+    )
+
+def search(request):
+    search_value = request.GET.get("q", "").strip()
+    if not search_value:
+        return redirect("contact:index")
+    """
+    Render the contact page.
+    Recupera todos os contatos marcados como 'show=True'
+    e ordena do mais recente para o mais antigo.
+    """
+    contacts = (
+        Contact.objects
+        .filter(show=True)\
+        .filter( 
+                Q(first_name__icontains=search_value) |
+                Q(last_name__icontains=search_value)  |
+                Q(phone__icontains=search_value)  |
+                Q(email__icontains=search_value)  
+                )\
+        .order_by("-id")
+    )
+    paginator = Paginator(contacts, 10)  # Show 10 contacts per page
+    page_number = request.GET.get('page') # Get the page number from the request
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "page_obj": page_obj,
+        "site_title": "search - "
     }
 
     return render(
@@ -28,18 +70,17 @@ def index(request):
     )
 
 
+
 def contact(request, contact_id):
     single_contact = get_object_or_404(
         Contact,
         pk=contact_id,
         show=True
     )
-    # single_contact = Contact.objects.filter(pk=contact_id).first()
-    # if not single_contact or not single_contact.show:
-    #     raise Http404("Contact not found or not available.")
-
+    site_title = f'{single_contact.first_name} - '
     context = {
         "contact": single_contact,
+        "site_title": site_title
     }
 
     return render(
