@@ -4,8 +4,6 @@ from contact.models import Contact
 from django.db.models import Q
 from django.core.paginator import Paginator
 
-# from django.http import Http404
-
 
 # Create your views here.
 def index(request):
@@ -15,12 +13,12 @@ def index(request):
     e ordena do mais recente para o mais antigo.
     """
     contacts = (
-        Contact.objects \
-        .filter(show=True)\
+        Contact.objects
+        .filter(show=True, owner=request.user)
         .order_by("-id")
     )
     paginator = Paginator(contacts, 10)  # Show 10 contacts per page
-    page_number = request.GET.get('page') # Get the page number from the request
+    page_number = request.GET.get('page')  # Get the page number from the request
     page_obj = paginator.get_page(page_number)  # Get the contacts for the requested page
 
     context = {
@@ -34,6 +32,7 @@ def index(request):
         context=context
     )
 
+
 def search(request):
     search_value = request.GET.get("q", "").strip()
     if not search_value:
@@ -45,17 +44,17 @@ def search(request):
     """
     contacts = (
         Contact.objects
-        .filter(show=True)\
-        .filter( 
-                Q(first_name__icontains=search_value) |
-                Q(last_name__icontains=search_value)  |
-                Q(phone__icontains=search_value)  |
-                Q(email__icontains=search_value)  
-                )\
+        .filter(show=True, owner=request.user)
+        .filter(
+            Q(first_name__icontains=search_value) |
+            Q(last_name__icontains=search_value) |
+            Q(phone__icontains=search_value) |
+            Q(email__icontains=search_value)
+        )
         .order_by("-id")
     )
     paginator = Paginator(contacts, 10)  # Show 10 contacts per page
-    page_number = request.GET.get('page') # Get the page number from the request
+    page_number = request.GET.get('page')  # Get the page number from the request
     page_obj = paginator.get_page(page_number)
 
     context = {
@@ -70,12 +69,12 @@ def search(request):
     )
 
 
-
 def contact(request, contact_id):
     single_contact = get_object_or_404(
         Contact,
         pk=contact_id,
-        show=True
+        show=True,
+        owner=request.user
     )
     site_title = f'{single_contact.first_name} - '
     context = {
