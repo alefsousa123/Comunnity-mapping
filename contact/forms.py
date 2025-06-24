@@ -4,29 +4,20 @@ from contact.models import Contact
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import password_validation
+from .models import Familia, Rua
 
 
 class ContactForm(forms.ModelForm):
-    picture = forms.ImageField(
-        required=False,
-        widget=forms.FileInput(attrs={
-            'accept': 'image/*',
-        })
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['first_name'].widget.attrs.update({
-            'placeholder': 'First Name',
-            'class': 'form-control',
-        })
-
     class Meta:
         model = Contact
-        fields = (
-            'first_name', 'last_name', 'phone', 'email',
-            'category', 'description', 'picture'
-        )
+        fields = ['first_name', 'last_name', 'familia', 'birth_date', 'description', 'rua']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['familia'].queryset = Familia.objects.filter(owner=user)
+            self.fields['rua'].queryset = Rua.objects.filter(owner=user)
 
     def clean_first_name(self):
         first_name = self.cleaned_data.get('first_name')
@@ -157,3 +148,23 @@ class RegisterUpdateForm(forms.ModelForm):
                     ValidationError(e)
                 )
         return password1
+
+
+class FamiliaForm(forms.ModelForm):
+    class Meta:
+        model = Familia
+        fields = ('nome', 'rua', 'endereco', 'reuniao_devocional', 'data_ultima_reuniao', 'nivel_envolvimento', 'description', )
+          # ou especifique os campos desejados
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['rua'].queryset = Rua.objects.filter(owner=user)
+
+
+class RuaForm(forms.ModelForm):
+    class Meta:
+        model = Rua
+        fields = ('nome', 'bairro',)
+          # ou especifique os campos desejados

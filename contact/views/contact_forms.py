@@ -9,18 +9,16 @@ from django.contrib.auth.decorators import login_required
 def create(request):
     form_action = reverse("contact:create")
     if request.method == "POST":
-        form = ContactForm(request.POST, request.FILES)
+        form = ContactForm(request.POST, request.FILES, user=request.user)
         context = {
             'form': form,
             'form_action': form_action,
         }
         if form.is_valid():
             contact = form.save(commit=False)
-            # If you need to set the owner or any other field, do it here
-            contact.owner = request.user  # Assuming you want to set the owner to the logged-in user
+            contact.owner = request.user
             contact.save()
-            # Redirect to the index page after saving
-            return redirect("contact:update", contact_id=contact.id)
+            return redirect("contact:index")
         return render(
             request,
             "contact/create.html",
@@ -28,7 +26,7 @@ def create(request):
         )
 
     context = {
-        'form': ContactForm(),
+        'form': ContactForm(user=request.user),
         'form_action': form_action,
     }
     return render(
@@ -42,16 +40,15 @@ def update(request, contact_id):
     contact = get_object_or_404(Contact, id=contact_id, show=True, owner=request.user)
     form_action = reverse("contact:update", kwargs={'contact_id': contact_id})
     if request.method == "POST":
-        form = ContactForm(request.POST, request.FILES, instance=contact)
+        form = ContactForm(request.POST, request.FILES, instance=contact, user=request.user)
         context = {
             'form': form,
             'form_action': form_action,
         }
         if form.is_valid():
-            form.save(commit=False)
-            # If you need to set the owner or any other field, do it here
-            contact = form.save()
-            # Redirect to the index page after saving
+            contact = form.save(commit=False)
+            contact.owner = request.user
+            contact.save()
             return redirect("contact:contact", contact_id=contact.id)
         return render(
             request,
@@ -60,7 +57,7 @@ def update(request, contact_id):
         )
 
     context = {
-        'form': ContactForm(instance=contact),
+        'form': ContactForm(instance=contact, user=request.user),
         'form_action': form_action,
     }
     return render(

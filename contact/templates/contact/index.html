@@ -10,35 +10,47 @@
             <thead>
                 <tr class="table-row table-row-header">
                     <th class="table-header">ID</th>
-                    <th class="table-header">First Name</th>
-                    <th class="table-header">Last Name</th>
-                    <th class="table-header">Phone</th>
-                    <th class="table-header">Email</th>
+                    <th class="table-header">Nome Completo</th>
+                    <th class="table-header">Idade</th>
+                    <th class="table-header">Etariedade</th>
+                    <th class="table-header">Família</th>
+                    <th class="table-header">Rua</th>
                 </tr>
             </thead>
             <tbody>
                 {% for contact in page_obj %}
                 <tr class="table-row">
                     <td class="table-cel">
-                        <a class="table-link" href="{% url "contact:contact" contact.id %}">{{contact.id}}</a>
+                        <a class="table-link" href="{% url "contact:contact" contact.id %}">{{ contact.id }}</a>
                     </td>
                     <td class="table-cel">
-                        <a class="table-link" href="#">{{ contact.first_name }}</a>
+                        <a class="table-link" href="{% url "contact:contact" contact.id %}">
+                            {{ contact.first_name }} {{ contact.last_name }}
+                        </a>
                     </td>
                     <td class="table-cel">
-                        <a class="table-link" href="#">{{ contact.last_name }}</a>
+                        {{ contact.age }}
                     </td>
                     <td class="table-cel">
-                        <a class="table-link" href="#">{{ contact.phone }}</a>
+                        {{ contact.age_group }}
                     </td>
                     <td class="table-cel">
-                        <a class="table-link" href="#">{{ contact.email }}</a>
+                        {% if contact.familia %}
+                            <a class="table-link" href="{% url 'contact:familia_detail' contact.familia.id %}">{{ contact.familia }}</a>
+                        {% else %}
+                            Nenhuma família
+                        {% endif %}
                     </td>
-                </tr>    
+                    <td class="table-cel">
+                        {% if contact.rua %}
+        <a class="table-link" href="{% url 'contact:rua_detail' contact.rua.id %}">{{ contact.rua.nome }}</a>
+    {% else %}
+        Nenhuma rua
+    {% endif %}
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
-            
-                
         </table>
 {% else %}
     <div class="single-contact">

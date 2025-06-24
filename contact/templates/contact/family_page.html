@@ -1,0 +1,63 @@
+{% extends "global/base.html" %}
+
+{% block content %}
+{% if page_obj %}
+    <div class="responsive-table">
+        <table class="contacts-table">
+            <caption class="table-caption">
+                Famílias
+            </caption>
+            <thead>
+                <tr class="table-row table-row-header">
+                    <th class="table-header">ID</th>
+                    <th class="table-header">Família</th>
+                    <th class="table-header">Endereço</th>
+                    <th class="table-header">Nível Env.</th>
+                    <th class="table-header">RD</th>
+                    <th class="table-header">Ultima RD</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                {% for familia in page_obj %}
+                <tr class="table-row{% if familia.dias_sem_visita != None %}{% if familia.dias_sem_visita >= 20 %} danger-row{% elif familia.dias_sem_visita >= 15 %} warning-row{% else %} success-row{% endif %}{% endif %}">
+                    <td class="table-cel">
+                        <a class="table-link" href="{% url 'contact:familia_detail' familia.id %}">{{ familia.id }}</a>
+                    </td>
+                    <td class="table-cel">
+                        <a class="table-link" href="{% url 'contact:familia_detail' familia.id %}">{{ familia.nome }}</a>
+                    </td>
+                    <td class="table-cel">
+                        {{ familia.endereco }}
+                    </td>
+                    <td class="table-cel">
+                        {{ familia.nivel_envolvimento }}
+                    </td>
+                    <td class="table-cel">
+                        {{ familia.reuniao_devocional|yesno:"Sim,Não" }}
+                    </td>
+                    <td class="table-cel">
+                        {{ familia.data_ultima_reuniao }}
+                    </td>
+                    <td class="table-cel">
+                        <!-- Botão Marcar Visitado -->
+                        <form method="post" action="{% url 'contact:marcar_visitado' familia.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-primary">Marcar visitado</button>
+                        </form>
+                    </td>
+                </tr>    
+                {% endfor %}
+            </tbody>
+            
+                
+        </table>
+{% else %}
+    <div class="single-contact">
+        <h1 class="single-contact-name">
+        Nenhum contato encontrado.
+        </h1>
+    </div>
+{% endif %}
+    </div>
+{% endblock content %}

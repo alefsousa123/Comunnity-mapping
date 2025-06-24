@@ -337,3 +337,17 @@ svg {
 .btn-delete {
   background: tomato;
 }
+
+.menu-gap {
+  display: flex;
+  gap: 2rem;
+}
+
+.success-row,
+.warning-row,
+.danger-row {
+  background-color: inherit !important;
+}
+.success-row { background-color: #d4edda !important; }
+.warning-row { background-color: #fff3cd !important; }
+.danger-row  { background-color: #f8d7da !important; }

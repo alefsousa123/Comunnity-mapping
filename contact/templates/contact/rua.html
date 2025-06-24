@@ -1,0 +1,44 @@
+{% extends "global/base.html" %}
+{% block content %}
+<div class="single-contact">
+    <h1 class="single-contact-name">
+        {{ rua.nome }}
+    </h1>
+    <p><b>Bairro:</b> {{ rua.bairro }}</p>
+    <p><b>Famílias conectadas:</b>
+        {% if rua.familias_conectadas %}
+            {% for familia in rua.familias_conectadas %}
+                <a href="{% url 'contact:familia_detail' familia.id %}">{{ familia.nome }}</a>{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                Nenhuma família conectada.
+            {% endfor %}
+        {% else %}
+            Nenhuma família conectada.
+        {% endif %}
+    </p>
+    <p><b>Pessoas conectadas:</b>
+        {% if pessoas_conectadas %}
+            {% for pessoa in pessoas_conectadas %}
+                <a href="{% url 'contact:contact' pessoa.id %}">{{ pessoa.first_name }} {{ pessoa.last_name }}</a>{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                Nenhuma pessoa conectada.
+            {% endfor %}
+        {% else %}
+            Nenhuma pessoa conectada.
+        {% endif %}
+    </p>
+
+    <div class="contact-links">
+        <a class="btn btn-link" href="{% url 'contact:rua_update' rua.id %}">Edit</a>
+        <form action="{% url 'contact:rua_delete' rua.id %}" method="POST">
+            {% csrf_token %}
+            {% if confirmation == 'no' %}
+                <input type="hidden" name="confirmation" value="yes">
+                <button class="btn btn-link btn-delete" type="submit">Para confirmar, clique novamente.</button>
+            {% else %}
+                <button class="btn btn-link btn-delete" type="submit">Delete</button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock content %}
