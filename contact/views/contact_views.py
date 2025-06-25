@@ -10,12 +10,14 @@ def index(request):
     Recupera todos os contatos marcados como 'show=True'
     e ordena do mais recente para o mais antigo.
     """
-    contacts = (
-        Contact.objects
-        .filter(show=True, owner=request.user)
-        .order_by("-id")
-    )
-    paginator = Paginator(contacts, 10)  # Show 10 contacts per page
+    age_group = request.GET.get("age_group", "").strip()
+    contatos = Contact.objects.filter(show=True, owner=request.user).order_by("-id")
+
+    # Filtro por faixa etária em Python
+    if age_group:
+        contatos = [c for c in contatos if c.age_group.lower() == age_group.lower()]
+
+    paginator = Paginator(contatos, 10)  # Show 10 contacts per page
     page_number = request.GET.get('page')  # Get the page number from the request
     page_obj = paginator.get_page(page_number)  # Get the contacts for the requested page
 
@@ -32,20 +34,24 @@ def index(request):
 @login_required(login_url="contact:login")
 def search(request):
     search_value = request.GET.get("q", "").strip()
-    if not search_value:
+    age_group = request.GET.get("age_group", "").strip()
+    if not search_value and not age_group:
         return redirect("contact:index")
 
-    contacts = (
-        Contact.objects
-        .filter(show=True, owner=request.user)
-        .filter(
+    contatos = Contact.objects.filter(show=True, owner=request.user)
+    if search_value:
+        contatos = contatos.filter(
             Q(first_name__icontains=search_value) |
             Q(last_name__icontains=search_value) |
-            Q(description__icontains=search_value)
+            Q(description__icontains=search_value) |
+            Q(familia__nome__icontains=search_value) |
+            Q(rua__nome__icontains=search_value)
         )
-        .order_by("-id")
-    )
-    paginator = Paginator(contacts, 10)
+    if age_group:
+        contatos = contatos.filter(age_group__iexact=age_group)
+
+    contatos = contatos.order_by("-id")
+    paginator = Paginator(contatos, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 

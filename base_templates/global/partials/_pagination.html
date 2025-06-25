@@ -2,8 +2,14 @@
   <div class="pagination">
     <span class="step-links">
         {% if page_obj.has_previous %}
-            <a href="?page=1&q={{ request.GET.q.strip }}">&laquo; first</a>
-            <a href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q.strip }}">previous</a>
+            <a href="?page=1
+                {% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}
+                {% if request.GET.age_group %}&age_group={{ request.GET.age_group|urlencode }}{% endif %}
+            ">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}
+                {% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}
+                {% if request.GET.age_group %}&age_group={{ request.GET.age_group|urlencode }}{% endif %}
+            ">previous</a>
         {% endif %}
 
         <span class="current">
@@ -11,8 +17,14 @@
         </span>
 
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q.strip }}">next</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}&q={{ request.GET.q.strip }}">last &raquo;</a>
+            <a href="?page={{ page_obj.next_page_number }}
+                {% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}
+                {% if request.GET.age_group %}&age_group={{ request.GET.age_group|urlencode }}{% endif %}
+            ">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}
+                {% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}
+                {% if request.GET.age_group %}&age_group={{ request.GET.age_group|urlencode }}{% endif %}
+            ">last &raquo;</a>
         {% endif %}
     </span>
   </div>

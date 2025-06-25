@@ -94,7 +94,8 @@ def search_familias(request):
         .filter(
             Q(nome__icontains=search_value) |
             Q(endereco__icontains=search_value) |
-            Q(description__icontains=search_value)
+            Q(description__icontains=search_value) |
+            Q(rua__nome__icontains=search_value)  # <-- busca pelo nome da rua
         )
         .order_by("-id")
     )

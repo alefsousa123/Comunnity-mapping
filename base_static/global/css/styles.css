@@ -351,3 +351,43 @@ svg {
 .success-row { background-color: #d4edda !important; }
 .warning-row { background-color: #fff3cd !important; }
 .danger-row  { background-color: #f8d7da !important; }
+
+.filter-select {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: rgba(0, 0, 0, 0.511) !important;
+    font-size: 1em;
+    padding: 0 2px !important;
+    margin-left: 0 !important;
+    min-width: 20px;
+    cursor: pointer;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    text-align: left; /* <-- aqui */
+    vertical-align: text-top; /* <-- aqui */
+    font-weight: bold;
+}
+
+/* Remove a seta padrão do select no Chrome, Safari, Edge */
+.filter-select::-ms-expand {
+    display: none;
+}
+.filter-select::-webkit-inner-spin-button,
+.filter-select::-webkit-outer-spin-button,
+.filter-select::-webkit-search-cancel-button,
+.filter-select::-webkit-search-decoration {
+    display: none;
+}
+.filter-select::-webkit-input-placeholder {
+    color: transparent;
+}
+
+/* Remove a seta padrão do select no Firefox */
+.filter-select:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 #333;
+}
+

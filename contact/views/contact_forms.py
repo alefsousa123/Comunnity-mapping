@@ -4,6 +4,8 @@ from contact.forms import ContactForm
 from django.urls import reverse
 from contact.models import Contact
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.core.paginator import Paginator
 
 @login_required(login_url="contact:login")
 def create(request):
@@ -80,4 +82,37 @@ def delete(request, contact_id):
             'contact': contact,
             'confirmation': confirmation,
         }
+    )
+
+@login_required(login_url="contact:login")
+def search(request):
+    search_value = request.GET.get("q", "").strip()
+    if not search_value:
+        return redirect("contact:index")
+
+    contatos = (
+        Contact.objects
+        .filter(show=True, owner=request.user)
+        .filter(
+            Q(first_name__icontains=search_value) |
+            Q(last_name__icontains=search_value) |
+            Q(description__icontains=search_value) |
+            Q(familia__nome__icontains=search_value) |
+            Q(rua__nome__icontains=search_value)  # <-- busca pelo nome da rua
+        )
+        .order_by("-id")
+    )
+    paginator = Paginator(contatos, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "page_obj": page_obj,
+        "site_title": "Busca de Contatos - "
+    }
+
+    return render(
+        request,
+        "contact/index.html",
+        context=context
     )

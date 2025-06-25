@@ -28,7 +28,7 @@
                         <a class="table-link" href="{% url 'contact:familia_detail' familia.id %}">{{ familia.nome }}</a>
                     </td>
                     <td class="table-cel">
-                        {{ familia.endereco }}
+                        {{familia.rua}} - {{ familia.endereco }}
                     </td>
                     <td class="table-cel">
                         {{ familia.nivel_envolvimento }}

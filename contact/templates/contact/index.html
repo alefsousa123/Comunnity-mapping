@@ -12,7 +12,18 @@
                     <th class="table-header">ID</th>
                     <th class="table-header">Nome Completo</th>
                     <th class="table-header">Idade</th>
-                    <th class="table-header">Etariedade</th>
+                    <th class="table-header">
+    Etariedade
+    <form method="get" style="display:inline; margin-left: 0.4em; vertical-align: middle;">
+        <select name="age_group" id="age_group" onchange="this.form.submit()" class="filter-select" style="font-weight: bold;">
+            <option value="">&#9660;</option>
+            <option value="criança" {% if request.GET.age_group == "criança" %}selected{% endif %}>Criança</option>
+            <option value="Pré jovem" {% if request.GET.age_group == "Pré jovem" %}selected{% endif %}>Pré-jovem</option>
+            <option value="jovem" {% if request.GET.age_group == "jovem" %}selected{% endif %}>Jovem</option>
+            <option value="adulto" {% if request.GET.age_group == "adulto" %}selected{% endif %}>Adulto</option>
+        </select>
+    </form>
+</th>
                     <th class="table-header">Família</th>
                     <th class="table-header">Rua</th>
                 </tr>
