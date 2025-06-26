@@ -5,7 +5,13 @@
         {{ familia.nome }}
     </h1>
     <p><b>ID:</b> {{ familia.id }}</p>
-    <p><b>Rua:</b> {{ familia.rua }}</p>
+    <p><b>Rua:</b>
+        {% if familia.rua %}
+            <a href="{% url 'contact:rua_detail' familia.rua.id %}">{{ familia.rua.nome }}</a>
+        {% else %}
+            Nenhuma rua cadastrada
+        {% endif %}
+    </p>
     <p><b>Endereço:</b> {{familia.rua}} - {{ familia.endereco }}</p>
     <p><b>Reunião Devocional:</b> {{ familia.reuniao_devocional|yesno:"Sim,Não" }}</p>
     <p><b>Data Última Visita:</b> {{ familia.data_ultima_reuniao }}</p>

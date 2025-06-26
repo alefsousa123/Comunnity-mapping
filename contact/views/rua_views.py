@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
-from contact.models import Rua
+from contact.models import Rua, GrupoFamilias
 from contact.forms import RuaForm
 
 @login_required(login_url="contact:login")
@@ -69,8 +69,12 @@ def rua_delete(request, rua_id):
 @login_required(login_url="contact:login")
 def rua_detail(request, rua_id):
     rua = get_object_or_404(Rua, pk=rua_id, owner=request.user)
-    familias_conectadas = rua.familias.all()  # pelo related_name do model Familia
-    pessoas_conectadas = rua.contatos.all()   # pelo related_name do model Contact
+    familias_conectadas = rua.familias.all()
+    pessoas_conectadas = rua.contatos.all()
+    aulas_crianca = rua.aulas_crianca.all()
+    grupos_pre_jovens = rua.grupos_pre_jovens.all()
+    circulos_estudo = rua.circulos_estudo.all()
+    grupos_familias = GrupoFamilias.objects.filter(ruas=rua)
     return render(
         request,
         "contact/rua.html",
@@ -78,6 +82,10 @@ def rua_detail(request, rua_id):
             "rua": rua,
             "familias_conectadas": familias_conectadas,
             "pessoas_conectadas": pessoas_conectadas,
+            "aulas_crianca": aulas_crianca,
+            "grupos_pre_jovens": grupos_pre_jovens,
+            "circulos_estudo": circulos_estudo,
+            "grupos_familias": grupos_familias,
         }
     )
 

@@ -5,7 +5,13 @@
         {{ grupo.nome }}
     </h1>
     <p><b>ID:</b> {{ grupo.id }}</p>
-    <p><b>Rua:</b> {{ grupo.rua }}</p>
+    <p><b>Rua:</b>
+        {% if grupo.rua %}
+            <a href="{% url 'contact:rua_detail' grupo.rua.id %}">{{ grupo.rua.nome }}</a>
+        {% else %}
+            Não informada
+        {% endif %}
+    </p>
     <p><b>Livro:</b> {{ grupo.livro }}</p>
     <p><b>Lições:</b> {{ grupo.licoes }}</p>
     <p><b>Dia da Semana:</b> {{ grupo.dia_semana }}</p>

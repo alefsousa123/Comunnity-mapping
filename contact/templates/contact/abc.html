@@ -5,7 +5,13 @@
         {{ abc.nome }}
     </h1>
     <p><b>ID:</b> {{ abc.id }}</p>
-    <p><b>Rua:</b> {{ abc.rua }}</p>
+    <p><b>Rua:</b>
+        {% if abc.rua %}
+            <a href="{% url 'contact:rua_detail' abc.rua.id %}">{{ abc.rua.nome }}</a>
+        {% else %}
+            Não informada
+        {% endif %}
+    </p>
     <p><b>Endereço:</b> {{ abc.rua }}{% if abc.rua and abc.rua.bairro %} - {{ abc.rua.bairro }}{% endif %}</p>
     <p><b>Série:</b> {{ abc.serie }}</p>
     <p><b>Lição:</b> {{ abc.licao }}</p>

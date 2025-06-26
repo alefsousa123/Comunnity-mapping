@@ -7,7 +7,7 @@
     <p><b>ID:</b> {{ grupo.id }}</p>
     <p><b>Ruas de atuação:</b>
         {% for rua in grupo.ruas.all %}
-            {{ rua.nome }}{% if not forloop.last %}, {% endif %}
+            <a href="{% url 'contact:rua_detail' rua.id %}">{{ rua.nome }}</a>{% if not forloop.last %}, {% endif %}
         {% empty %}
             Nenhuma rua cadastrada.
         {% endfor %}

@@ -17,6 +17,13 @@
     <p><b>Livro:</b> {{ circulo.livro }}</p>
     <p><b>Unidade:</b> {{ circulo.unidade }}</p>
     <p><b>Seção:</b> {{ circulo.secao }}</p>
+    <p><b>Rua:</b>
+        {% if circulo.rua %}
+            <a href="{% url 'contact:rua_detail' circulo.rua.id %}">{{ circulo.rua.nome }}</a>
+        {% else %}
+            Não informada
+        {% endif %}
+    </p>
     <p><b>Descrição:</b> {{ circulo.descricao|linebreaksbr }}</p>
     <p><b>Participantes:</b>
         {% for participante in circulo.participantes.all %}

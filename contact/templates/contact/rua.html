@@ -5,6 +5,7 @@
         {{ rua.nome }}
     </h1>
     <p><b>Bairro:</b> {{ rua.bairro }}</p>
+
     <p><b>Famílias conectadas:</b>
         {% if rua.familias_conectadas %}
             {% for familia in rua.familias_conectadas %}
@@ -16,6 +17,7 @@
             Nenhuma família conectada.
         {% endif %}
     </p>
+
     <p><b>Pessoas conectadas:</b>
         {% if pessoas_conectadas %}
             {% for pessoa in pessoas_conectadas %}
@@ -27,6 +29,42 @@
             Nenhuma pessoa conectada.
         {% endif %}
     </p>
+
+    {# Aulas de Criança na Rua #}
+    {% if aulas_crianca %}
+    <p><b>Aulas de criança nesta rua:</b>
+        {% for aula in aulas_crianca %}
+            <a href="{% url 'contact:aulacrianca_detail' aula.id %}">{{ aula.nome }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
+
+    {# Grupos de Pré-Jovens na Rua #}
+    {% if grupos_pre_jovens %}
+    <p><b>Grupos de pré-jovens nesta rua:</b>
+        {% for grupo in grupos_pre_jovens %}
+            <a href="{% url 'contact:grupoprejovens_detail' grupo.id %}">{{ grupo.nome }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
+
+    {# Círculos de Estudo na Rua #}
+    {% if circulos_estudo %}
+    <p><b>Círculos de estudo nesta rua:</b>
+        {% for circulo in circulos_estudo %}
+            <a href="{% url 'contact:circuloestudo_detail' circulo.id %}">{{ circulo.nome }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
+
+    {# Grupos de Família atuando na Rua #}
+    {% if grupos_familias %}
+    <p><b>Grupos de família atuando nesta rua:</b>
+        {% for grupo in grupos_familias %}
+            <a href="{% url 'contact:grupofamilias_detail' grupo.id %}">{{ grupo.nome }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
 
     <div class="contact-links">
         <a class="btn btn-link" href="{% url 'contact:rua_update' rua.id %}">Edit</a>
