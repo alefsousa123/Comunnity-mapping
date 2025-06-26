@@ -1,0 +1,73 @@
+{% extends "global/base.html" %}
+
+{% block content %}
+{% if page_obj %}
+    <div class="responsive-table">
+        <table class="contacts-table">
+            <caption class="table-caption">
+                Círculos de Estudo
+            </caption>
+            <thead>
+                <tr class="table-row table-row-header">
+                    <th class="table-header">ID</th>
+                    <th class="table-header">Círculo</th>
+                    <th class="table-header">Tutor</th>
+                    <th class="table-header">Dia da Semana</th>
+                    <th class="table-header">Último Encontro</th>
+                    <th class="table-header">Livro</th>
+                    <th class="table-header">Unidade</th>
+                    <th class="table-header">Seção</th>
+                    <th class="table-header">Participantes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for circulo in page_obj %}
+                <tr class="table-row">
+                    <td class="table-cel">
+                        <a class="table-link" href="{% url 'contact:circuloestudo_detail' circulo.id %}">{{ circulo.id }}</a>
+                    </td>
+                    <td class="table-cel">
+                        <a class="table-link" href="{% url 'contact:circuloestudo_detail' circulo.id %}">{{ circulo.nome }}</a>
+                    </td>
+                    <td class="table-cel">
+                        {% if circulo.tutor %}
+                            <a class="table-link" href="{% url 'contact:contact' circulo.tutor.id %}">{{ circulo.tutor.first_name }} {{ circulo.tutor.last_name }}</a>
+                        {% else %}
+                            Não informado
+                        {% endif %}
+                    </td>
+                    <td class="table-cel">
+                        {{ circulo.dia_semana }}
+                    </td>
+                    <td class="table-cel">
+                        {{ circulo.data_ultimo_encontro }}
+                    </td>
+                    <td class="table-cel">
+                        {{ circulo.livro }}
+                    </td>
+                    <td class="table-cel">
+                        {{ circulo.unidade }}
+                    </td>
+                    <td class="table-cel">
+                        {{ circulo.secao }}
+                    </td>
+                    <td class="table-cel">
+                        {% for participante in circulo.participantes.all %}
+                            <a class="table-link" href="{% url 'contact:contact' participante.id %}">{{ participante.first_name }} {{ participante.last_name }}</a>{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Nenhum participante cadastrado.
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+{% else %}
+    <div class="single-contact">
+        <h1 class="single-contact-name">
+        Nenhum círculo de estudo encontrado.
+        </h1>
+    </div>
+{% endif %}
+    </div>
+{% endblock content %}

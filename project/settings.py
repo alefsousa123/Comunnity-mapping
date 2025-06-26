@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "contact",
+    
 ]
 
 MIDDLEWARE = [
@@ -130,4 +131,3 @@ try:
     from .local_settings import *  # noqa: F401, F403
 except ImportError:
     ...
-    

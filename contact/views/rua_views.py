@@ -7,6 +7,7 @@ from contact.forms import RuaForm
 
 @login_required(login_url="contact:login")
 def rua_create(request):
+    site_title = "Criar Rua"
     if request.method == "POST":
         form = RuaForm(request.POST)
         if form.is_valid():
@@ -14,29 +15,39 @@ def rua_create(request):
             rua.owner = request.user
             rua.save()
             return redirect("contact:ruas_list")
+        return render(
+            request,
+            "contact/partials/_rua-form.html",
+            {"form": form, "site_title": site_title, "form_title": site_title}
+        )
     else:
         form = RuaForm()
-    return render(request, "contact/partials/_rua-form.html", {"form": form})  # voltou ao template original
+    return render(
+        request,
+        "contact/partials/_rua-form.html",
+        {"form": form, "site_title": site_title, "form_title": site_title}
+    )
 
 @login_required(login_url="contact:login")
 def rua_update(request, rua_id):
     rua = get_object_or_404(Rua, pk=rua_id, owner=request.user)
-    form = RuaForm(instance=rua)
-
+    site_title = "Atualizar Rua"
     if request.method == "POST":
         form = RuaForm(request.POST, instance=rua)
         if form.is_valid():
             form.save()
             return redirect("contact:rua_detail", rua_id=rua.id)
-
+        return render(
+            request,
+            "contact/partials/_rua-form.html",
+            {"form": form, "site_title": site_title, "form_title": site_title}
+        )
+    else:
+        form = RuaForm(instance=rua)
     return render(
         request,
-        "contact/partials/_rua-form.html",  # voltou ao template original
-        {
-            "form": form,
-            "site_title": "Atualizar Rua - ",
-            "form_title": "Atualizar Rua",
-        }
+        "contact/partials/_rua-form.html",
+        {"form": form, "site_title": site_title, "form_title": site_title}
     )
 
 @login_required(login_url="contact:login")

@@ -1,0 +1,46 @@
+{% extends "global/base.html" %}
+{% block content %}
+<div class="single-contact">
+    <h1 class="single-contact-name">
+        {{ grupo.nome }}
+    </h1>
+    <p><b>ID:</b> {{ grupo.id }}</p>
+    <p><b>Ruas de atuação:</b>
+        {% for rua in grupo.ruas.all %}
+            {{ rua.nome }}{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            Nenhuma rua cadastrada.
+        {% endfor %}
+    </p>
+    <p><b>Data Última Reflexão:</b> {{ grupo.data_ultima_reuniao_reflexao }}</p>
+    <p><b>Descrição:</b> {{ grupo.description|linebreaksbr }}</p>
+    <p><b>Participantes:</b>
+        {% for participante in grupo.participantes.all %}
+            <a href="{% url 'contact:contact' participante.id %}">{{ participante.first_name }} {{ participante.last_name }}</a>{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            Nenhum participante cadastrado.
+        {% endfor %}
+    </p>
+    <p><b>Famílias Envolvidas:</b>
+        {% for familia in grupo.familias.all %}
+            <a href="{% url 'contact:familia_detail' familia.id %}">{{ familia.nome }}</a>{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            Nenhuma família cadastrada.
+        {% endfor %}
+    </p>
+
+    <div class="contact-links">
+        <a class="btn btn-link" href="{% url 'contact:grupofamilias_update' grupo.id %}">Edit</a>
+        <form action="{% url 'contact:grupofamilias_delete' grupo.id %}" method="POST">
+            {% csrf_token %}
+            {% if confirmation %}
+                <input type="hidden" name="confirmation" value="yes">
+                <button class="btn btn-link btn-delete" type="submit">Para confirmar, clique novamente.</button>
+            {% else %}
+                <input type="hidden" name="confirmation" value="confirm">
+                <button class="btn btn-link btn-delete" type="submit">Delete</button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock content %}

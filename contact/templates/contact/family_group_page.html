@@ -1,0 +1,61 @@
+{% extends "global/base.html" %}
+
+{% block content %}
+{% if page_obj %}
+    <div class="responsive-table">
+        <table class="contacts-table">
+            <caption class="table-caption">
+                Grupos de Famílias
+            </caption>
+            <thead>
+                <tr class="table-row table-row-header">
+                    <th class="table-header">ID</th>
+                    <th class="table-header">Grupo</th>
+                    <th class="table-header">Rua(s) De Atuação</th>
+                    <th class="table-header">Data Última Reflexão</th>
+                    <th class="table-header">Participantes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grupo in page_obj %}
+                <tr class="table-row">
+                    <td class="table-cel">
+                        <a class="table-link" href="{% url 'contact:grupofamilias_detail' grupo.id %}">{{ grupo.id }}</a>
+                    </td>
+                    <td class="table-cel">
+                        <a class="table-link" href="{% url 'contact:grupofamilias_detail' grupo.id %}">{{ grupo.nome }}</a>
+                    </td>
+                    <td class="table-cel">
+                        {% for rua in grupo.ruas.all %}
+                            {{ rua.nome }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Nenhuma rua cadastrada.
+                        {% endfor %}
+                    </td>
+                    <td class="table-cel">
+                        {% if grupo.data_ultima_reuniao_reflexao %}
+                            {{ grupo.data_ultima_reuniao_reflexao|date:"d/m/Y" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="table-cel">
+                        {% for participante in grupo.participantes.all %}
+                            <a class="table-link" href="{% url 'contact:contact' participante.id %}">{{ participante.first_name }} {{ participante.last_name }}</a>{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Nenhum participante cadastrado.
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+{% else %}
+    <div class="single-contact">
+        <h1 class="single-contact-name">
+        Nenhum grupo de família encontrado.
+        </h1>
+    </div>
+{% endif %}
+    </div>
+{% endblock content %}

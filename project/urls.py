@@ -29,7 +29,7 @@ urlpatterns = [
             "contact.urls",
         ),
     ),
-    path("admin/", admin.site.urls),
+
 ]
 
 urlpatterns += static(

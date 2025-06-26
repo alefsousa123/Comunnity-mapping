@@ -11,15 +11,25 @@ from django.contrib.auth.models import User
 class Rua(models.Model):
     nome = models.CharField(max_length=100)
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    show = models.BooleanField(default=True)  # Adicionado
+    show = models.BooleanField(default=True)
     bairro =  models.CharField(max_length=100, blank=True)
-    
+    description = models.TextField(blank=True)  # Adicionado
+
     def __str__(self):
         return self.nome
 
     @property
     def familias_conectadas(self):
         return self.familias.all()
+    @property
+    def grupos_pre_jovens_conectados(self):
+        return self.grupos_pre_jovens.all()
+    @property
+    def aulas_crianca_conectadas(self):
+        return self.aulas_crianca.all()
+    @property
+    def grupos_familias_conectados(self):
+        return self.grupos_familias.all()
 
 class Familia(models.Model):
     nome = models.CharField(max_length=100)
@@ -30,7 +40,7 @@ class Familia(models.Model):
     nivel_envolvimento = models.CharField(max_length=100, blank=True)
     description = models.TextField(blank=True)
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    show = models.BooleanField(default=True)  # Adicionado
+    show = models.BooleanField(default=True)
 
     def __str__(self):
         return self.nome
@@ -38,6 +48,9 @@ class Familia(models.Model):
     @property
     def membros(self):
         return self.contact_set.all()
+    @property
+    def grupos_familias_conectados(self):
+        return self.grupos_familias.all()
 
 class Contact(models.Model):
     first_name = models.CharField(max_length=50)
@@ -46,7 +59,7 @@ class Contact(models.Model):
     description = models.TextField(blank=True)
     familia = models.ForeignKey(Familia, on_delete=models.SET_NULL, null=True, blank=True, related_name='membros')
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    show = models.BooleanField(default=True)  # Adicionado
+    show = models.BooleanField(default=True)
     rua = models.ForeignKey(Rua, on_delete=models.SET_NULL, null=True, blank=True, related_name='contatos')
 
     def __str__(self):
@@ -75,3 +88,71 @@ class Contact(models.Model):
             return "Jovem"
         else:
             return "Adulto"
+
+class GrupoPreJovens(models.Model):
+    nome = models.CharField(max_length=100)
+    rua = models.ForeignKey(Rua, on_delete=models.SET_NULL, null=True, related_name='grupos_pre_jovens')
+    livro = models.CharField(max_length=100, blank=True)
+    licoes = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)  # Corrigido
+    pre_jovens = models.ManyToManyField('Contact', related_name='grupos_pre_jovens')
+    animador = models.ForeignKey('Contact', on_delete=models.SET_NULL, null=True, blank=True, related_name='grupos_pre_jovens_como_animador')  # <-- Adicione esta linha
+    data_ultimo_encontro = models.DateField(null=True, blank=True)
+    dia_semana = models.CharField(max_length=30, blank=True)
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    show = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nome
+
+class AulaCrianca(models.Model):
+    nome = models.CharField(max_length=100)
+    rua = models.ForeignKey(Rua, on_delete=models.SET_NULL, null=True, related_name='aulas_crianca', blank=True)
+    participantes = models.ManyToManyField('Contact', related_name='aulas_crianca')
+    serie = models.CharField(max_length=100, blank=True)
+    licao = models.CharField(max_length=100, blank=True)
+    dia_semana = models.CharField(max_length=30, blank=True)
+    data_ultima_aula = models.DateField(null=True, blank=True)
+    description = models.TextField(blank=True)  # Corrigido
+    professor = models.ForeignKey('Contact', on_delete=models.SET_NULL, null=True, blank=True, related_name='aulas_como_professor')
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    show = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nome
+
+class GrupoFamilias(models.Model):
+    nome = models.CharField(max_length=100)
+    participantes = models.ManyToManyField(Contact, blank=True)
+    familias = models.ManyToManyField(Familia, blank=True)
+    ruas = models.ManyToManyField(Rua, blank=True)
+    description = models.TextField(blank=True)
+    data_ultima_reuniao_reflexao = models.DateField("Data da última reunião de reflexão", null=True, blank=True)  # <-- Adicione esta linha
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    show = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nome
+
+class CirculoEstudo(models.Model):
+    nome = models.CharField(max_length=100)
+    tutor = models.ForeignKey('Contact', on_delete=models.SET_NULL, null=True, blank=True, related_name='circulos_como_tutor')
+    participantes = models.ManyToManyField('Contact', related_name='circulos_estudo')
+    rua = models.ForeignKey('Rua', on_delete=models.SET_NULL, null=True, blank=True, related_name='circulos_estudo')  # <-- Adicione esta linha
+    dia_semana = models.CharField(max_length=30, blank=True)
+    data_ultimo_encontro = models.DateField(null=True, blank=True)
+    livro = models.CharField(max_length=100, blank=True)
+    unidade = models.CharField(max_length=100, blank=True)
+    secao = models.CharField(max_length=100, blank=True)
+    description = models.TextField(blank=True)
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    show = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nome
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['familias'].queryset = Familia.objects.filter(owner=user)

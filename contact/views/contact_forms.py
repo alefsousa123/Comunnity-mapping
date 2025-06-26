@@ -10,11 +10,13 @@ from django.core.paginator import Paginator
 @login_required(login_url="contact:login")
 def create(request):
     form_action = reverse("contact:create")
+    site_title = "Criar Contato"
     if request.method == "POST":
         form = ContactForm(request.POST, request.FILES, user=request.user)
         context = {
             'form': form,
             'form_action': form_action,
+            'site_title': site_title,
         }
         if form.is_valid():
             contact = form.save(commit=False)
@@ -30,6 +32,7 @@ def create(request):
     context = {
         'form': ContactForm(user=request.user),
         'form_action': form_action,
+        'site_title': site_title,
     }
     return render(
         request,
@@ -41,11 +44,13 @@ def create(request):
 def update(request, contact_id):
     contact = get_object_or_404(Contact, id=contact_id, show=True, owner=request.user)
     form_action = reverse("contact:update", kwargs={'contact_id': contact_id})
+    site_title = "Editar Contato"
     if request.method == "POST":
         form = ContactForm(request.POST, request.FILES, instance=contact, user=request.user)
         context = {
             'form': form,
             'form_action': form_action,
+            'site_title': site_title,
         }
         if form.is_valid():
             contact = form.save(commit=False)
@@ -61,6 +66,7 @@ def update(request, contact_id):
     context = {
         'form': ContactForm(instance=contact, user=request.user),
         'form_action': form_action,
+        'site_title': site_title,
     }
     return render(
         request,

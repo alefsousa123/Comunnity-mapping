@@ -9,6 +9,7 @@ from datetime import date
 
 @login_required(login_url="contact:login")
 def familia_create(request):
+    site_title = "Criar Família"
     if request.method == "POST":
         form = FamiliaForm(request.POST, user=request.user)
         if form.is_valid():
@@ -16,9 +17,18 @@ def familia_create(request):
             familia.owner = request.user
             familia.save()
             return redirect("contact:family")
+        return render(
+            request,
+            "contact/partials/_familia-form.html",
+            {"form": form, "site_title": site_title, "form_title": site_title}
+        )
     else:
         form = FamiliaForm(user=request.user)
-    return render(request, "contact/partials/_familia-form.html", {"form": form})
+    return render(
+        request,
+        "contact/partials/_familia-form.html",
+        {"form": form, "site_title": site_title, "form_title": site_title}
+    )
 
 @login_required(login_url="contact:login")
 def familia_detail(request, familia_id):

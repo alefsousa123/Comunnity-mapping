@@ -4,7 +4,11 @@ from contact.models import Contact
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import password_validation
-from .models import Familia, Rua
+from .models import Familia, Rua, GrupoFamilias, GrupoPreJovens, AulaCrianca, CirculoEstudo
+from .widgets import ParticipanteWidget
+from dal import autocomplete
+from .utils import contatos_do_usuario
+
 
 
 class ContactForm(forms.ModelForm):
@@ -166,5 +170,97 @@ class FamiliaForm(forms.ModelForm):
 class RuaForm(forms.ModelForm):
     class Meta:
         model = Rua
-        fields = ('nome', 'bairro',)
-          # ou especifique os campos desejados
+        fields = ('nome', 'bairro', 'description')  # Adicionado 'description'
+
+
+
+class GrupoPreJovensForm(forms.ModelForm):
+    class Meta:
+        model = GrupoPreJovens
+        fields = ('nome', 'rua', 'livro', 'licoes', 'description', 'pre_jovens', 'animador', 'data_ultimo_encontro', 'dia_semana')
+        widgets = {
+            'pre_jovens': forms.CheckboxSelectMultiple,
+            # Remova esta linha:
+            # 'rua': forms.CheckboxSelectMultiple,
+            # 'animador': forms.RadioSelect,  # Opcional, se quiser radio no form
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['pre_jovens'].queryset = Contact.objects.filter(owner=user)
+            self.fields['animador'].queryset = Contact.objects.filter(owner=user)
+            self.fields['rua'].queryset = Rua.objects.filter(owner=user)
+
+class AulaCriancaForm(forms.ModelForm):
+    class Meta:
+        model = AulaCrianca
+        fields = ('nome', 'rua', 'participantes', 'serie', 'licao', 'dia_semana', 'data_ultima_aula', 'description', 'professor')
+        widgets = {
+            'participantes': forms.CheckboxSelectMultiple,
+        }
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['rua'].queryset = Rua.objects.filter(owner=user)
+            self.fields['participantes'].queryset = Contact.objects.filter(owner=user)
+            self.fields['professor'].queryset = Contact.objects.filter(owner=user)
+
+
+class GrupoFamiliasForm(forms.ModelForm):
+    class Meta:
+        model = GrupoFamilias
+        fields = ('nome', 'participantes', 'familias', 'ruas', 'description', 'data_ultima_reuniao_reflexao')
+        widgets = {
+            'participantes': forms.CheckboxSelectMultiple,
+            'familias': forms.CheckboxSelectMultiple,
+            'ruas': forms.CheckboxSelectMultiple,
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['participantes'].queryset = Contact.objects.filter(owner=user)
+            self.fields['familias'].queryset = Familia.objects.filter(owner=user)
+            self.fields['ruas'].queryset = Rua.objects.filter(owner=user)
+
+class CirculoEstudoForm(forms.ModelForm):
+    class Meta:
+        model = CirculoEstudo
+        fields = (
+            'nome', 'tutor', 'participantes', 'dia_semana', 'data_ultimo_encontro',
+            'livro', 'unidade', 'secao', 'description', 'rua'
+        )
+        widgets = {
+            'participantes': forms.CheckboxSelectMultiple,
+            # NÃO defina 'rua' aqui, pois você renderiza manualmente
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['tutor'].queryset = Contact.objects.filter(owner=user)
+            self.fields['participantes'].queryset = Contact.objects.filter(owner=user)
+            self.fields['rua'].queryset = Rua.objects.filter(owner=user)
+
+    def clean(self):
+        cleaned = super().clean()
+        # Força a limpeza do campo rua
+        cleaned['rua'] = self.clean_rua()
+        return cleaned
+
+    def clean_rua(self):
+        data = self.data.getlist('rua')
+        if not data:
+            return None
+        if len(data) > 1:
+            raise ValidationError("Selecione apenas uma rua.")
+        try:
+            return Rua.objects.get(pk=data[0])
+        except Rua.DoesNotExist:
+            raise ValidationError("Rua inválida.")

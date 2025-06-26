@@ -4,18 +4,18 @@
     <h1 class="single-contact-name">
         {{ contact.first_name }} {{ contact.last_name }}
     </h1>
-    <p><b>ID:</b> {{contact.id}} </p> 
-    <p><b>data de nascimento</b> {{contact.birth_date}} </b> 
-    <p><b>idade</b> {{contact.age}} </p> 
-    <p><b>grupo etário:</b> {{contact.age_group}} </p> 
-    <p><b>Description:</b> {{ contact.description|linebreaksbr }} </p> 
+    <p><b>ID:</b> {{contact.id}} </p>
+    <p><b>data de nascimento</b> {{contact.birth_date}} </b>
+    <p><b>idade</b> {{contact.age}} </p>
+    <p><b>grupo etário:</b> {{contact.age_group}} </p>
+    <p><b>Description:</b> {{ contact.description|linebreaksbr }} </p>
     <p><b>Família:</b>
         {% if contact.familia %}
             <a href="{% url 'contact:familia_detail' contact.familia.id %}">{{ contact.familia.nome }}</a>
         {% else %}
             Nenhuma família cadastrada
         {% endif %}
-    </p> 
+    </p>
     <p><b>Rua:</b>
         {% if contact.rua %}
             <a href="{% url 'contact:rua_detail' contact.rua.id %}">{{ contact.rua.nome }}</a>
@@ -23,6 +23,69 @@
             Nenhuma rua cadastrada
         {% endif %}
     </p>
+
+    {# Professor de Aula de Criança #}
+    {% if contact.aulas_como_professor.exists %}
+    <p><b>Professor em aulas de criança:</b>
+        {% for aula in contact.aulas_como_professor.all %}
+            <a href="{% url 'contact:aulacrianca_detail' aula.id %}">{{ aula.nome }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
+
+    {# Aluno de Aula de Criança #}
+    {% if contact.aulas_crianca.exists %}
+    <p><b>Aluno em aulas baha'í de criança:</b>
+        {% for aula in contact.aulas_crianca.all %}
+            <a href="{% url 'contact:aulacrianca_detail' aula.id %}">{{ aula.nome }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
+
+    {# Grupo de Família #}
+    {% if contact.grupofamilias_set.exists %}
+    <p><b>Participa de grupos de família:</b>
+        {% for grupo in contact.grupofamilias_set.all %}
+            <a href="{% url 'contact:grupofamilias_detail' grupo.id %}">{{ grupo.nome }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
+
+    {# Animador de Grupo de Pré-Jovens #}
+    {% if contact.grupos_pre_jovens_como_animador.exists %}
+    <p><b>Animador de grupos de pré-jovens:</b>
+        {% for grupo in contact.grupos_pre_jovens_como_animador.all %}
+            <a href="{% url 'contact:grupoprejovens_detail' grupo.id %}">{{ grupo.nome }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
+
+    {# Participante de Grupo de Pré-Jovens #}
+    {% if contact.grupos_pre_jovens.exists %}
+    <p><b>Participa de grupos de pré-jovens:</b>
+        {% for grupo in contact.grupos_pre_jovens.all %}
+            <a href="{% url 'contact:grupoprejovens_detail' grupo.id %}">{{ grupo.nome }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
+
+    {# Tutor de Círculo de Estudo #}
+    {% if contact.circulos_como_tutor.exists %}
+    <p><b>Tutor de círculos de estudo:</b>
+        {% for circulo in contact.circulos_como_tutor.all %}
+            <a href="{% url 'contact:circuloestudo_detail' circulo.id %}">{{ circulo.nome }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
+
+    {# Participante de Círculo de Estudo #}
+    {% if contact.circulos_estudo.exists %}
+    <p><b>Participa de círculos de estudo:</b>
+        {% for circulo in contact.circulos_estudo.all %}
+            <a href="{% url 'contact:circuloestudo_detail' circulo.id %}">{{ circulo.nome }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
 
     {% if contact.picture %}
         <p>
@@ -32,10 +95,8 @@
 
     <div class="contact-links">
         <a class="btn btn-link" href="{% url "contact:update" contact.id %}">Edit</a>
-
         <form action="{% url "contact:delete" contact.id %}" method="POST">
-            {% csrf_token %} 
-
+            {% csrf_token %}
             {% if confirmation == 'no' %}
                 <input type="hidden" name="confirmation" value="yes">
                 <button class="btn btn-link btn-delete" type="submit">Para confirmar, clique novamente.</button>
@@ -43,7 +104,6 @@
                 <button class="btn btn-link btn-delete" type="submit">Delete</button>
             {% endif %}
         </form>
-        {% comment %} <a class="btn" href="{% url "contact:delete" contact.id %}">Delete</a> {% endcomment %}
     </div>
 </div>
 {% endblock content %}

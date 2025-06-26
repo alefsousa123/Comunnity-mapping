@@ -11,6 +11,14 @@
             <a href="{% url 'contact:ruas_list' %}" class="header-link">Ruas</a>
             ---
             <a href="{% url "contact:index" %}" class="header-link">Pessoas</a>
+            ---
+            <a href="{% url 'contact:grupofamilias_list' %}" class="header-link">Grupo de Famílias</a>
+            ---
+            <a href="{% url 'contact:aulacrianca_list' %}" class="header-link">Aula de Criança</a>
+            ---
+            <a href="{% url 'contact:grupoprejovens_list' %}" class="header-link">Grupo de Pré-Jovens</a>
+            ---
+            <a href="{% url 'contact:circuloestudo_list' %}" class="header-link">Círculo de Estudos</a>
         {% endif %}
     </h2>
 
@@ -26,7 +34,19 @@
                 </li>
                 <li class="menu-item">
                     <a href="{% url 'contact:rua_create' %}" class="menu-link">Nova rua</a>
-
+                </li>
+                <li class="menu-item">
+                    <a href="{% url 'contact:grupofamilias_create' %}" class="menu-link">Novo grupo de famílias</a>
+                </li>
+                <li class="menu-item">
+                    <a href="{% url 'contact:aulacrianca_create' %}" class="menu-link">Nova aula de criança</a>
+                </li>
+                <li class="menu-item">
+                    <a href="{% url 'contact:grupoprejovens_create' %}" class="menu-link">Novo grupo de pré-jovens</a>
+                </li>
+                <li class="menu-item">
+                    <a href="{% url 'contact:circuloestudo_create' %}" class="menu-link">Novo círculo de estudo</a>
+                </li>
                 <li class="menu-item">
                     <a href="{% url 'contact:profile' %}" class="menu-link">Configurações de usuário</a>
                 </li>

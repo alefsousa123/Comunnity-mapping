@@ -1,0 +1,35 @@
+{% extends "global/base.html" %}
+{% block content %}
+<div class="single-contact">
+    <h1 class="single-contact-name">
+        {{ grupo.nome }}
+    </h1>
+    <p><b>ID:</b> {{ grupo.id }}</p>
+    <p><b>Rua:</b> {{ grupo.rua }}</p>
+    <p><b>Livro:</b> {{ grupo.livro }}</p>
+    <p><b>Lições:</b> {{ grupo.licoes }}</p>
+    <p><b>Dia da Semana:</b> {{ grupo.dia_semana }}</p>
+    <p><b>Data Último Encontro:</b> {{ grupo.data_ultimo_encontro }}</p>
+    <p><b>Descrição:</b> {{ grupo.descricao|linebreaksbr }}</p>
+    <p><b>Pré-jovens:</b>
+        {% for pre_jovem in grupo.pre_jovens.all %}
+            <a href="{% url 'contact:contact' pre_jovem.id %}">{{ pre_jovem.first_name }} {{ pre_jovem.last_name }}</a>{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            Nenhum pré-jovem cadastrado.
+        {% endfor %}
+    </p>
+
+    <div class="contact-links">
+        <a class="btn btn-link" href="{% url 'contact:grupoprejovens_update' grupo.id %}">Edit</a>
+        <form action="{% url 'contact:grupoprejovens_delete' grupo.id %}" method="POST">
+            {% csrf_token %}
+            {% if confirmation == 'no' %}
+                <input type="hidden" name="confirmation" value="yes">
+                <button class="btn btn-link btn-delete" type="submit">Para confirmar, clique novamente.</button>
+            {% else %}
+                <button class="btn btn-link btn-delete" type="submit">Delete</button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock content %}

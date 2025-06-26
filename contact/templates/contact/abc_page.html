@@ -1,0 +1,73 @@
+{% extends "global/base.html" %}
+
+{% block content %}
+{% if page_obj %}
+    <div class="responsive-table">
+        <table class="contacts-table">
+            <caption class="table-caption">
+                Aulas Bahá'í de Crianças
+            </caption>
+            <thead>
+                <tr class="table-row table-row-header">
+                    <th class="table-header">ID</th>
+                    <th class="table-header">Nome</th>
+                    <th class="table-header">Rua</th>
+                    <th class="table-header">Série</th>
+                    <th class="table-header">Lição</th>
+                    <th class="table-header">Dia da Semana</th>
+                    <th class="table-header">Última Aula</th>
+                    <th class="table-header">Professor</th>
+                    <th class="table-header">Participantes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aula in page_obj %}
+                <tr class="table-row">
+                    <td class="table-cel">
+                        <a class="table-link" href="{% url 'contact:aulacrianca_detail' aula.id %}">{{ aula.id }}</a>
+                    </td>
+                    <td class="table-cel">
+                        <a class="table-link" href="{% url 'contact:aulacrianca_detail' aula.id %}">{{ aula.nome }}</a>
+                    </td>
+                    <td class="table-cel">
+                        {{ aula.rua }}
+                    </td>
+                    <td class="table-cel">
+                        {{ aula.serie }}
+                    </td>
+                    <td class="table-cel">
+                        {{ aula.licao }}
+                    </td>
+                    <td class="table-cel">
+                        {{ aula.dia_semana }}
+                    </td>
+                    <td class="table-cel">
+                        {{ aula.data_ultima_aula }}
+                    </td>
+                    <td class="table-cel">
+                        {% if aula.professor %}
+                            <a class="table-link" href="{% url 'contact:contact' aula.professor.id %}">{{ aula.professor.first_name }} {{ aula.professor.last_name }}</a>
+                        {% else %}
+                            Não informado
+                        {% endif %}
+                    </td>
+                    <td class="table-cel">
+                        {% for participante in aula.participantes.all %}
+                            <a class="table-link" href="{% url 'contact:contact' participante.id %}">{{ participante.first_name }} {{ participante.last_name }}</a>{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Nenhum participante cadastrado.
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+{% else %}
+    <div class="single-contact">
+        <h1 class="single-contact-name">
+        Nenhuma aula encontrada.
+        </h1>
+    </div>
+{% endif %}
+    </div>
+{% endblock content %}

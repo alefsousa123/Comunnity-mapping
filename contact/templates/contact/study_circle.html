@@ -1,0 +1,42 @@
+{% extends "global/base.html" %}
+{% block content %}
+<div class="single-contact">
+    <h1 class="single-contact-name">
+        {{ circulo.nome }}
+    </h1>
+    <p><b>ID:</b> {{ circulo.id }}</p>
+    <p><b>Tutor:</b>
+        {% if circulo.tutor %}
+            <a href="{% url 'contact:contact' circulo.tutor.id %}">{{ circulo.tutor.first_name }} {{ circulo.tutor.last_name }}</a>
+        {% else %}
+            Não informado
+        {% endif %}
+    </p>
+    <p><b>Dia da semana:</b> {{ circulo.dia_semana }}</p>
+    <p><b>Data Último Encontro:</b> {{ circulo.data_ultimo_encontro }}</p>
+    <p><b>Livro:</b> {{ circulo.livro }}</p>
+    <p><b>Unidade:</b> {{ circulo.unidade }}</p>
+    <p><b>Seção:</b> {{ circulo.secao }}</p>
+    <p><b>Descrição:</b> {{ circulo.descricao|linebreaksbr }}</p>
+    <p><b>Participantes:</b>
+        {% for participante in circulo.participantes.all %}
+            <a href="{% url 'contact:contact' participante.id %}">{{ participante.first_name }} {{ participante.last_name }}</a>{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            Nenhum participante cadastrado.
+        {% endfor %}
+    </p>
+
+    <div class="contact-links">
+        <a class="btn btn-link" href="{% url 'contact:circuloestudo_update' circulo.id %}">Edit</a>
+        <form action="{% url 'contact:circuloestudo_delete' circulo.id %}" method="POST">
+            {% csrf_token %}
+            {% if confirmation == 'no' %}
+                <input type="hidden" name="confirmation" value="yes">
+                <button class="btn btn-link btn-delete" type="submit">Para confirmar, clique novamente.</button>
+            {% else %}
+                <button class="btn btn-link btn-delete" type="submit">Delete</button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock content %}
