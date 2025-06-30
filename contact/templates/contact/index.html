@@ -23,7 +23,7 @@
             <option value="adulto" {% if request.GET.age_group == "adulto" %}selected{% endif %}>Adulto</option>
         </select>
     </form>
-</th>
+</th> 
                     <th class="table-header">Família</th>
                     <th class="table-header">Rua</th>
                 </tr>
@@ -54,7 +54,7 @@
                     </td>
                     <td class="table-cel">
                         {% if contact.rua %}
-        <a class="table-link" href="{% url 'contact:rua_detail' contact.rua.id %}">{{ contact.rua.nome }}</a>
+        <a class="table-link" href="{% url 'contact:rua_detail' contact.rua.id %}">{{ contact.rua.nome }}{% if contact.rua.bairro %} - {{contact.rua.bairro}}{% endif %}</a>
     {% else %}
         Nenhuma rua
     {% endif %}

@@ -45,7 +45,8 @@ def search(request):
             Q(last_name__icontains=search_value) |
             Q(description__icontains=search_value) |
             Q(familia__nome__icontains=search_value) |
-            Q(rua__nome__icontains=search_value)
+            Q(rua__nome__icontains=search_value) |
+            Q(rua__bairro__icontains=search_value)  # <-- Adicionado para buscar pelo bairro
         )
     if age_group:
         contatos = contatos.filter(age_group__iexact=age_group)
