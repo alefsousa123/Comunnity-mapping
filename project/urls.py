@@ -23,13 +23,8 @@ from django.conf import settings
 
 
 urlpatterns = [
-    path(
-        "",
-        include(
-            "contact.urls",
-        ),
-    ),
-
+    path('admin/', admin.site.urls),
+    path('', include('contact.urls')),  # ou o nome do seu app
 ]
 
 urlpatterns += static(
