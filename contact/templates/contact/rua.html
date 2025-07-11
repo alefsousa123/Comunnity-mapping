@@ -18,17 +18,40 @@
         {% endif %}
     </p>
 
-    <p><b>Pessoas conectadas:</b>
-        {% if pessoas_conectadas %}
-            {% for pessoa in pessoas_conectadas %}
-                <a href="{% url 'contact:contact' pessoa.id %}">{{ pessoa.first_name }} {{ pessoa.last_name }}</a>{% if not forloop.last %}, {% endif %}
-            {% empty %}
-                Nenhuma pessoa conectada.
-            {% endfor %}
-        {% else %}
-            Nenhuma pessoa conectada.
+    <p><b>Pessoas conectadas ({{ pessoas_conectadas|length }}):</b></p>
+    <div style="margin-left: 2em;">
+        {% if criancas %}
+            <div><b>Crianças ({{ criancas|length }}):</b>
+                {% for pessoa in criancas %}
+                    <a href="{% url 'contact:contact' pessoa.id %}">{{ pessoa.first_name }} {{ pessoa.last_name }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
         {% endif %}
-    </p>
+        {% if pre_jovens %}
+            <div><b>Pré-jovens ({{ pre_jovens|length }}):</b>
+                {% for pessoa in pre_jovens %}
+                    <a href="{% url 'contact:contact' pessoa.id %}">{{ pessoa.first_name }} {{ pessoa.last_name }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if jovens %}
+            <div><b>Jovens ({{ jovens|length }}):</b>
+                {% for pessoa in jovens %}
+                    <a href="{% url 'contact:contact' pessoa.id %}">{{ pessoa.first_name }} {{ pessoa.last_name }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if adultos %}
+            <div><b>Adultos ({{ adultos|length }}):</b>
+                {% for pessoa in adultos %}
+                    <a href="{% url 'contact:contact' pessoa.id %}">{{ pessoa.first_name }} {{ pessoa.last_name }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if not criancas and not pre_jovens and not jovens and not adultos %}
+            <div>Nenhuma pessoa conectada.</div>
+        {% endif %}
+    </div>
 
     {# Aulas de Criança na Rua #}
     {% if aulas_crianca %}

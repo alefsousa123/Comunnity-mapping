@@ -75,18 +75,30 @@ def rua_detail(request, rua_id):
     grupos_pre_jovens = rua.grupos_pre_jovens.all()
     circulos_estudo = rua.circulos_estudo.all()
     grupos_familias = GrupoFamilias.objects.filter(ruas=rua)
+
+    criancas = [p for p in pessoas_conectadas if p.age_group == "criança"]
+    pre_jovens = [p for p in pessoas_conectadas if p.age_group == "Pré jovem"]
+    jovens = [p for p in pessoas_conectadas if p.age_group == "jovem"]
+    adultos = [p for p in pessoas_conectadas if p.age_group.lower() == "adulto"]
+
+    context = {
+        "rua": rua,
+        "familias_conectadas": familias_conectadas,
+        "pessoas_conectadas": pessoas_conectadas,
+        "aulas_crianca": aulas_crianca,
+        "grupos_pre_jovens": grupos_pre_jovens,
+        "circulos_estudo": circulos_estudo,
+        "grupos_familias": grupos_familias,
+        "criancas": criancas,
+        "pre_jovens": pre_jovens,
+        "jovens": jovens,
+        "adultos": adultos,
+    }
+
     return render(
         request,
         "contact/rua.html",
-        {
-            "rua": rua,
-            "familias_conectadas": familias_conectadas,
-            "pessoas_conectadas": pessoas_conectadas,
-            "aulas_crianca": aulas_crianca,
-            "grupos_pre_jovens": grupos_pre_jovens,
-            "circulos_estudo": circulos_estudo,
-            "grupos_familias": grupos_familias,
-        }
+        context=context
     )
 
 @login_required(login_url="contact:login")
