@@ -33,9 +33,9 @@
           <div class="form-content">
             <div class="form-group">
               <label>Professor</label>
-              <div id="professores-lista">
+              <div id="professores-lista" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 0.5em;">
                 {% for professor in professores %}
-                  <label class="professor-item">
+                  <label class="professor-item" style="display: block;">
                     <input type="radio" name="professor" value="{{ professor.pk }}"
                       {% if form.is_bound %}
                         {% if professor.pk|stringformat:"s" == form.data.professor %}checked{% endif %}
@@ -44,7 +44,7 @@
                       {% endif %}
                     >
                     {{ professor }}
-                  </label><br>
+                  </label>
                 {% endfor %}
               </div>
               <div id="paginacao-professores"></div>
@@ -63,9 +63,9 @@
     <div class="form-content">
       <div class="form-group">
         <label>Participantes</label>
-        <div id="participantes-lista">
+        <div id="participantes-lista" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 0.5em;">
           {% for participante in participantes %}
-            <label class="participante-item">
+            <label class="participante-item" style="display: block;">
               <input type="checkbox" name="participantes" value="{{ participante.pk }}"
                 {% if form.is_bound %}
                   {% if participante.pk|stringformat:"s" in form.data.participantes %}checked{% endif %}
@@ -74,7 +74,7 @@
                 {% endif %}
               >
               {{ participante }}
-            </label><br>
+            </label>
           {% endfor %}
         </div>
         <div id="paginacao-participantes"></div>
@@ -90,9 +90,9 @@
     <div class="form-content">
       <div class="form-group">
         <label>Ruas</label>
-        <div id="ruas-lista">
+        <div id="ruas-lista" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 0.5em;">
           {% for rua in ruas %}
-            <label class="rua-item">
+            <label class="rua-item" style="display: block;">
               <input type="checkbox" name="rua" value="{{ rua.pk }}"
                 {% if form.is_bound %}
                   {% if rua.pk|stringformat:"s" in form.data.rua %}checked{% endif %}
@@ -101,7 +101,7 @@
                 {% endif %}
               >
               {{ rua }}
-            </label><br>
+            </label>
           {% endfor %}
         </div>
         <div id="paginacao-ruas"></div>
@@ -122,181 +122,49 @@ document.addEventListener('DOMContentLoaded', function() {
   var buscaParticipante = document.getElementById('busca-participante');
   var listaParticipantes = document.getElementById('participantes-lista');
   var participantes = Array.from(listaParticipantes.querySelectorAll('.participante-item'));
-  var porPagina = 15;
-  var paginaAtual = 1;
-
-  function renderListaParticipantes() {
-    var filtro = buscaParticipante.value.toLowerCase();
-    var filtrados = participantes.filter(function(item) {
-      return item.textContent.toLowerCase().includes(filtro);
-    });
-
-    var totalPaginas = Math.ceil(filtrados.length / porPagina);
-    if (paginaAtual > totalPaginas) paginaAtual = 1;
-    var inicio = (paginaAtual - 1) * porPagina;
-    var fim = inicio + porPagina;
-    var pagina = filtrados.slice(inicio, fim);
-
-    listaParticipantes.innerHTML = '';
-    pagina.forEach(function(item) {
-      listaParticipantes.appendChild(item);
-      listaParticipantes.appendChild(document.createElement('br'));
-    });
-
-    var paginacao = document.getElementById('paginacao-participantes');
-    if (!paginacao) {
-      paginacao = document.createElement('div');
-      paginacao.id = 'paginacao-participantes';
-      listaParticipantes.parentNode.appendChild(paginacao);
-    }
-    paginacao.innerHTML = '';
-    if (totalPaginas > 1) {
-      if (paginaAtual > 1) {
-        var btnAnt = document.createElement('button');
-        btnAnt.type = 'button';
-        btnAnt.textContent = 'Anterior';
-        btnAnt.onclick = function() { paginaAtual--; renderListaParticipantes(); };
-        paginacao.appendChild(btnAnt);
-      }
-      paginacao.appendChild(document.createTextNode(
-        ' Página ' + paginaAtual + ' de ' + totalPaginas + ' '
-      ));
-      if (paginaAtual < totalPaginas) {
-        var btnProx = document.createElement('button');
-        btnProx.type = 'button';
-        btnProx.textContent = 'Próxima';
-        btnProx.onclick = function() { paginaAtual++; renderListaParticipantes(); };
-        paginacao.appendChild(btnProx);
-      }
-    }
-  }
 
   buscaParticipante.addEventListener('input', function() {
-    paginaAtual = 1;
-    renderListaParticipantes();
+    var filtro = buscaParticipante.value.toLowerCase();
+    participantes.forEach(function(item) {
+      if (item.textContent.toLowerCase().includes(filtro)) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
   });
-
-  renderListaParticipantes();
 
   // Ruas
   var buscaRua = document.getElementById('busca-rua');
   var listaRuas = document.getElementById('ruas-lista');
   var ruas = Array.from(listaRuas.querySelectorAll('.rua-item'));
-  var ruasPorPagina = 5;
-  var paginaAtualRua = 1;
-
-  function renderListaRuas() {
-    var filtro = buscaRua.value.toLowerCase();
-    var filtradas = ruas.filter(function(item) {
-      return item.textContent.toLowerCase().includes(filtro);
-    });
-
-    var totalPaginas = Math.ceil(filtradas.length / ruasPorPagina);
-    if (paginaAtualRua > totalPaginas) paginaAtualRua = 1;
-    var inicio = (paginaAtualRua - 1) * ruasPorPagina;
-    var fim = inicio + ruasPorPagina;
-    var pagina = filtradas.slice(inicio, fim);
-
-    listaRuas.innerHTML = '';
-    pagina.forEach(function(item) {
-      listaRuas.appendChild(item);
-      listaRuas.appendChild(document.createElement('br'));
-    });
-
-    var paginacao = document.getElementById('paginacao-ruas');
-    if (!paginacao) {
-      paginacao = document.createElement('div');
-      paginacao.id = 'paginacao-ruas';
-      listaRuas.parentNode.appendChild(paginacao);
-    }
-    paginacao.innerHTML = '';
-    if (totalPaginas > 1) {
-      if (paginaAtualRua > 1) {
-        var btnAnt = document.createElement('button');
-        btnAnt.type = 'button';
-        btnAnt.textContent = 'Anterior';
-        btnAnt.onclick = function() { paginaAtualRua--; renderListaRuas(); };
-        paginacao.appendChild(btnAnt);
-      }
-      paginacao.appendChild(document.createTextNode(
-        ' Página ' + paginaAtualRua + ' de ' + totalPaginas + ' '
-      ));
-      if (paginaAtualRua < totalPaginas) {
-        var btnProx = document.createElement('button');
-        btnProx.type = 'button';
-        btnProx.textContent = 'Próxima';
-        btnProx.onclick = function() { paginaAtualRua++; renderListaRuas(); };
-        paginacao.appendChild(btnProx);
-      }
-    }
-  }
 
   buscaRua.addEventListener('input', function() {
-    paginaAtualRua = 1;
-    renderListaRuas();
+    var filtro = buscaRua.value.toLowerCase();
+    ruas.forEach(function(item) {
+      if (item.textContent.toLowerCase().includes(filtro)) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
   });
-
-  renderListaRuas();
 
   // Professores
   var buscaProfessor = document.getElementById('busca-professor');
   var listaProfessores = document.getElementById('professores-lista');
   var professores = Array.from(listaProfessores.querySelectorAll('.professor-item'));
-  var professoresPorPagina = 5;
-  var paginaAtualProfessor = 1;
-
-  function renderListaProfessores() {
-    var filtro = buscaProfessor.value.toLowerCase();
-    var filtrados = professores.filter(function(item) {
-      return item.textContent.toLowerCase().includes(filtro);
-    });
-
-    var totalPaginas = Math.ceil(filtrados.length / professoresPorPagina);
-    if (paginaAtualProfessor > totalPaginas) paginaAtualProfessor = 1;
-    var inicio = (paginaAtualProfessor - 1) * professoresPorPagina;
-    var fim = inicio + professoresPorPagina;
-    var pagina = filtrados.slice(inicio, fim);
-
-    listaProfessores.innerHTML = '';
-    pagina.forEach(function(item) {
-      listaProfessores.appendChild(item);
-      listaProfessores.appendChild(document.createElement('br'));
-    });
-
-    var paginacao = document.getElementById('paginacao-professores');
-    if (!paginacao) {
-      paginacao = document.createElement('div');
-      paginacao.id = 'paginacao-professores';
-      listaProfessores.parentNode.appendChild(paginacao);
-    }
-    paginacao.innerHTML = '';
-    if (totalPaginas > 1) {
-      if (paginaAtualProfessor > 1) {
-        var btnAnt = document.createElement('button');
-        btnAnt.type = 'button';
-        btnAnt.textContent = 'Anterior';
-        btnAnt.onclick = function() { paginaAtualProfessor--; renderListaProfessores(); };
-        paginacao.appendChild(btnAnt);
-      }
-      paginacao.appendChild(document.createTextNode(
-        ' Página ' + paginaAtualProfessor + ' de ' + totalPaginas + ' '
-      ));
-      if (paginaAtualProfessor < totalPaginas) {
-        var btnProx = document.createElement('button');
-        btnProx.type = 'button';
-        btnProx.textContent = 'Próxima';
-        btnProx.onclick = function() { paginaAtualProfessor++; renderListaProfessores(); };
-        paginacao.appendChild(btnProx);
-      }
-    }
-  }
 
   buscaProfessor.addEventListener('input', function() {
-    paginaAtualProfessor = 1;
-    renderListaProfessores();
+    var filtro = buscaProfessor.value.toLowerCase();
+    professores.forEach(function(item) {
+      if (item.textContent.toLowerCase().includes(filtro)) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
   });
-
-  renderListaProfessores();
 });
 </script>
 {% endblock %}

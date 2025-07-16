@@ -34,13 +34,13 @@
     <div class="form-content">
       <div class="form-group">
         <label>Participantes</label>
-        <div id="participantes-lista">
+        <div id="participantes-lista" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 0.5em;">
           {% for participante in participantes %}
-            <label class="participante-item">
+            <label class="participante-item" style="display: block;">
               <input type="checkbox" name="participantes" value="{{ participante.pk }}"
                 {% if participante.pk|stringformat:"s" in form.data.participantes or participante in form.instance.participantes.all %}checked{% endif %}>
               {{ participante }}
-            </label><br>
+            </label>
           {% endfor %}
         </div>
         <div id="paginacao-participantes"></div>
@@ -56,13 +56,13 @@
     <div class="form-content">
       <div class="form-group">
         <label>Famílias</label>
-        <div id="familias-lista">
+        <div id="familias-lista" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 0.5em;">
           {% for familia in familias %}
-            <label class="familia-item">
+            <label class="familia-item" style="display: block;">
               <input type="checkbox" name="familias" value="{{ familia.pk }}"
                 {% if familia.pk|stringformat:"s" in form.data.familias or familia in form.instance.familias.all %}checked{% endif %}>
               {{ familia }}
-            </label><br>
+            </label>
           {% endfor %}
         </div>
         <div id="paginacao-familias"></div>
@@ -78,13 +78,13 @@
     <div class="form-content">
       <div class="form-group">
         <label>Rua(s) de atuação</label>
-        <div id="ruas-lista">
+        <div id="ruas-lista" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 0.5em;">
           {% for rua in ruas %}
-            <label class="rua-item">
+            <label class="rua-item" style="display: block;">
               <input type="checkbox" name="ruas" value="{{ rua.pk }}"
                 {% if rua.pk|stringformat:"s" in form.data.ruas or rua in form.instance.ruas.all %}checked{% endif %}>
               {{ rua }}
-            </label><br>
+            </label>
           {% endfor %}
         </div>
         <div id="paginacao-ruas"></div>
@@ -104,182 +104,53 @@ document.addEventListener('DOMContentLoaded', function() {
   // Participantes
   var buscaParticipante = document.getElementById('busca-participante');
   var listaParticipantes = document.getElementById('participantes-lista');
-  var participantes = Array.from(listaParticipantes.querySelectorAll('.participante-item'));
-  var porPagina = 15;
-  var paginaAtual = 1;
-
-  function renderListaParticipantes() {
-    var filtro = buscaParticipante.value.toLowerCase();
-    var filtrados = participantes.filter(function(item) {
-      return item.textContent.toLowerCase().includes(filtro);
+  if (buscaParticipante && listaParticipantes) {
+    var participantes = Array.from(listaParticipantes.querySelectorAll('.participante-item'));
+    buscaParticipante.addEventListener('input', function() {
+      var filtro = buscaParticipante.value.toLowerCase();
+      participantes.forEach(function(item) {
+        if (item.textContent.toLowerCase().includes(filtro)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
     });
-
-    var totalPaginas = Math.ceil(filtrados.length / porPagina);
-    if (paginaAtual > totalPaginas) paginaAtual = 1;
-    var inicio = (paginaAtual - 1) * porPagina;
-    var fim = inicio + porPagina;
-    var pagina = filtrados.slice(inicio, fim);
-
-    listaParticipantes.innerHTML = '';
-    pagina.forEach(function(item) {
-      listaParticipantes.appendChild(item);
-      listaParticipantes.appendChild(document.createElement('br'));
-    });
-
-    var paginacao = document.getElementById('paginacao-participantes');
-    if (!paginacao) {
-      paginacao = document.createElement('div');
-      paginacao.id = 'paginacao-participantes';
-      listaParticipantes.parentNode.appendChild(paginacao);
-    }
-    paginacao.innerHTML = '';
-    if (totalPaginas > 1) {
-      if (paginaAtual > 1) {
-        var btnAnt = document.createElement('button');
-        btnAnt.type = 'button';
-        btnAnt.textContent = 'Anterior';
-        btnAnt.onclick = function() { paginaAtual--; renderListaParticipantes(); };
-        paginacao.appendChild(btnAnt);
-      }
-      paginacao.appendChild(document.createTextNode(
-        ' Página ' + paginaAtual + ' de ' + totalPaginas + ' '
-      ));
-      if (paginaAtual < totalPaginas) {
-        var btnProx = document.createElement('button');
-        btnProx.type = 'button';
-        btnProx.textContent = 'Próxima';
-        btnProx.onclick = function() { paginaAtual++; renderListaParticipantes(); };
-        paginacao.appendChild(btnProx);
-      }
-    }
   }
-
-  buscaParticipante.addEventListener('input', function() {
-    paginaAtual = 1;
-    renderListaParticipantes();
-  });
-
-  renderListaParticipantes();
 
   // Famílias
   var buscaFamilia = document.getElementById('busca-familia');
   var listaFamilias = document.getElementById('familias-lista');
-  var familias = Array.from(listaFamilias.querySelectorAll('.familia-item'));
-  var familiasPorPagina = 10;
-  var paginaAtualFamilia = 1;
-
-  function renderListaFamilias() {
-    var filtro = buscaFamilia.value.toLowerCase();
-    var filtradas = familias.filter(function(item) {
-      return item.textContent.toLowerCase().includes(filtro);
+  if (buscaFamilia && listaFamilias) {
+    var familias = Array.from(listaFamilias.querySelectorAll('.familia-item'));
+    buscaFamilia.addEventListener('input', function() {
+      var filtro = buscaFamilia.value.toLowerCase();
+      familias.forEach(function(item) {
+        if (item.textContent.toLowerCase().includes(filtro)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
     });
-
-    var totalPaginas = Math.ceil(filtradas.length / familiasPorPagina);
-    if (paginaAtualFamilia > totalPaginas) paginaAtualFamilia = 1;
-    var inicio = (paginaAtualFamilia - 1) * familiasPorPagina;
-    var fim = inicio + familiasPorPagina;
-    var pagina = filtradas.slice(inicio, fim);
-
-    listaFamilias.innerHTML = '';
-    pagina.forEach(function(item) {
-      listaFamilias.appendChild(item);
-      listaFamilias.appendChild(document.createElement('br'));
-    });
-
-    var paginacao = document.getElementById('paginacao-familias');
-    if (!paginacao) {
-      paginacao = document.createElement('div');
-      paginacao.id = 'paginacao-familias';
-      listaFamilias.parentNode.appendChild(paginacao);
-    }
-    paginacao.innerHTML = '';
-    if (totalPaginas > 1) {
-      if (paginaAtualFamilia > 1) {
-        var btnAnt = document.createElement('button');
-        btnAnt.type = 'button';
-        btnAnt.textContent = 'Anterior';
-        btnAnt.onclick = function() { paginaAtualFamilia--; renderListaFamilias(); };
-        paginacao.appendChild(btnAnt);
-      }
-      paginacao.appendChild(document.createTextNode(
-        ' Página ' + paginaAtualFamilia + ' de ' + totalPaginas + ' '
-      ));
-      if (paginaAtualFamilia < totalPaginas) {
-        var btnProx = document.createElement('button');
-        btnProx.type = 'button';
-        btnProx.textContent = 'Próxima';
-        btnProx.onclick = function() { paginaAtualFamilia++; renderListaFamilias(); };
-        paginacao.appendChild(btnProx);
-      }
-    }
   }
-
-  buscaFamilia.addEventListener('input', function() {
-    paginaAtualFamilia = 1;
-    renderListaFamilias();
-  });
-
-  renderListaFamilias();
 
   // Ruas
   var buscaRua = document.getElementById('busca-rua');
   var listaRuas = document.getElementById('ruas-lista');
-  var ruas = Array.from(listaRuas.querySelectorAll('.rua-item'));
-  var ruasPorPagina = 5;
-  var paginaAtualRua = 1;
-
-  function renderListaRuas() {
-    var filtro = buscaRua.value.toLowerCase();
-    var filtradas = ruas.filter(function(item) {
-      return item.textContent.toLowerCase().includes(filtro);
+  if (buscaRua && listaRuas) {
+    var ruas = Array.from(listaRuas.querySelectorAll('.rua-item'));
+    buscaRua.addEventListener('input', function() {
+      var filtro = buscaRua.value.toLowerCase();
+      ruas.forEach(function(item) {
+        if (item.textContent.toLowerCase().includes(filtro)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
     });
-
-    var totalPaginas = Math.ceil(filtradas.length / ruasPorPagina);
-    if (paginaAtualRua > totalPaginas) paginaAtualRua = 1;
-    var inicio = (paginaAtualRua - 1) * ruasPorPagina;
-    var fim = inicio + ruasPorPagina;
-    var pagina = filtradas.slice(inicio, fim);
-
-    listaRuas.innerHTML = '';
-    pagina.forEach(function(item) {
-      listaRuas.appendChild(item);
-      listaRuas.appendChild(document.createElement('br'));
-    });
-
-    var paginacao = document.getElementById('paginacao-ruas');
-    if (!paginacao) {
-      paginacao = document.createElement('div');
-      paginacao.id = 'paginacao-ruas';
-      listaRuas.parentNode.appendChild(paginacao);
-    }
-    paginacao.innerHTML = '';
-    if (totalPaginas > 1) {
-      if (paginaAtualRua > 1) {
-        var btnAnt = document.createElement('button');
-        btnAnt.type = 'button';
-        btnAnt.textContent = 'Anterior';
-        btnAnt.onclick = function() { paginaAtualRua--; renderListaRuas(); };
-        paginacao.appendChild(btnAnt);
-      }
-      paginacao.appendChild(document.createTextNode(
-        ' Página ' + paginaAtualRua + ' de ' + totalPaginas + ' '
-      ));
-      if (paginaAtualRua < totalPaginas) {
-        var btnProx = document.createElement('button');
-        btnProx.type = 'button';
-        btnProx.textContent = 'Próxima';
-        btnProx.onclick = function() { paginaAtualRua++; renderListaRuas(); };
-        paginacao.appendChild(btnProx);
-      }
-    }
   }
-
-  buscaRua.addEventListener('input', function() {
-    paginaAtualRua = 1;
-    renderListaRuas();
-  });
-
-  renderListaRuas();
 });
 </script>
 {% endblock %}

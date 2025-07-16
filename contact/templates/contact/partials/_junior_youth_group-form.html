@@ -33,9 +33,9 @@
           <div class="form-content">
             <div class="form-group">
               <label>Animador</label>
-              <div id="animadores-lista">
+              <div id="animadores-lista" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 0.5em;">
                 {% for animador in animadores %}
-                  <label class="animador-item">
+                  <label class="animador-item" style="display: block;">
                     <input type="radio" name="animador" value="{{ animador.pk }}"
                       {% if form.is_bound %}
                         {% if animador.pk|stringformat:"s" == form.data.animador %}checked{% endif %}
@@ -44,7 +44,7 @@
                       {% endif %}
                     >
                     {{ animador }}
-                  </label><br>
+                  </label>
                 {% endfor %}
               </div>
               <div id="paginacao-animadores"></div>
@@ -63,9 +63,9 @@
     <div class="form-content">
       <div class="form-group">
         <label>Pré-Jovens</label>
-        <div id="prejovens-lista">
+        <div id="prejovens-lista" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 0.5em;">
           {% for prejovem in prejovens %}
-            <label class="prejovem-item">
+            <label class="prejovem-item" style="display: block;">
               <input type="checkbox" name="pre_jovens" value="{{ prejovem.pk }}"
                 {% if form.is_bound %}
                   {% if prejovem.pk|stringformat:"s" in form.data.pre_jovens %}checked{% endif %}
@@ -74,7 +74,7 @@
                 {% endif %}
               >
               {{ prejovem }}
-            </label><br>
+            </label>
           {% endfor %}
         </div>
         <div id="paginacao-prejovens"></div>
@@ -90,9 +90,9 @@
     <div class="form-content">
       <div class="form-group">
         <label>Ruas</label>
-        <div id="ruas-lista">
+        <div id="ruas-lista" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 0.5em;">
           {% for rua in ruas %}
-            <label class="rua-item">
+            <label class="rua-item" style="display: block;">
               <input type="checkbox" name="rua" value="{{ rua.pk }}"
                 {% if form.is_bound %}
                   {% if rua.pk|stringformat:"s" in form.data.rua %}checked{% endif %}
@@ -101,7 +101,7 @@
                 {% endif %}
               >
               {{ rua }}
-            </label><br>
+            </label>
           {% endfor %}
         </div>
         <div id="paginacao-ruas"></div>
@@ -118,185 +118,53 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Pré-jovens
+  // Pré-jovens (já está no seu código)
   var buscaPrejovem = document.getElementById('busca-prejovem');
   var listaPrejovens = document.getElementById('prejovens-lista');
   var prejovens = Array.from(listaPrejovens.querySelectorAll('.prejovem-item'));
-  var prejovensPorPagina = 15;
-  var paginaAtualPrejovem = 1;
-
-  function renderListaPrejovens() {
-    var filtro = buscaPrejovem.value.toLowerCase();
-    var filtrados = prejovens.filter(function(item) {
-      return item.textContent.toLowerCase().includes(filtro);
-    });
-
-    var totalPaginas = Math.ceil(filtrados.length / prejovensPorPagina);
-    if (paginaAtualPrejovem > totalPaginas) paginaAtualPrejovem = 1;
-    var inicio = (paginaAtualPrejovem - 1) * prejovensPorPagina;
-    var fim = inicio + prejovensPorPagina;
-    var pagina = filtrados.slice(inicio, fim);
-
-    listaPrejovens.innerHTML = '';
-    pagina.forEach(function(item) {
-      listaPrejovens.appendChild(item);
-      listaPrejovens.appendChild(document.createElement('br'));
-    });
-
-    var paginacao = document.getElementById('paginacao-prejovens');
-    if (!paginacao) {
-      paginacao = document.createElement('div');
-      paginacao.id = 'paginacao-prejovens';
-      listaPrejovens.parentNode.appendChild(paginacao);
-    }
-    paginacao.innerHTML = '';
-    if (totalPaginas > 1) {
-      if (paginaAtualPrejovem > 1) {
-        var btnAnt = document.createElement('button');
-        btnAnt.type = 'button';
-        btnAnt.textContent = 'Anterior';
-        btnAnt.onclick = function() { paginaAtualPrejovem--; renderListaPrejovens(); };
-        paginacao.appendChild(btnAnt);
-      }
-      paginacao.appendChild(document.createTextNode(
-        ' Página ' + paginaAtualPrejovem + ' de ' + totalPaginas + ' '
-      ));
-      if (paginaAtualPrejovem < totalPaginas) {
-        var btnProx = document.createElement('button');
-        btnProx.type = 'button';
-        btnProx.textContent = 'Próxima';
-        btnProx.onclick = function() { paginaAtualPrejovem++; renderListaPrejovens(); };
-        paginacao.appendChild(btnProx);
-      }
-    }
-  }
 
   buscaPrejovem.addEventListener('input', function() {
-    paginaAtualPrejovem = 1;
-    renderListaPrejovens();
-  });
-
-  renderListaPrejovens();
-
-  // Ruas
-  var buscaRua = document.getElementById('busca-rua');
-  var listaRuas = document.getElementById('ruas-lista');
-  var ruas = Array.from(listaRuas.querySelectorAll('.rua-item'));
-  var ruasPorPagina = 5;
-  var paginaAtualRua = 1;
-
-  function renderListaRuas() {
-    var filtro = buscaRua.value.toLowerCase();
-    var filtradas = ruas.filter(function(item) {
-      return item.textContent.toLowerCase().includes(filtro);
-    });
-
-    var totalPaginas = Math.ceil(filtradas.length / ruasPorPagina);
-    if (paginaAtualRua > totalPaginas) paginaAtualRua = 1;
-    var inicio = (paginaAtualRua - 1) * ruasPorPagina;
-    var fim = inicio + ruasPorPagina;
-    var pagina = filtradas.slice(inicio, fim);
-
-    listaRuas.innerHTML = '';
-    pagina.forEach(function(item) {
-      listaRuas.appendChild(item);
-      listaRuas.appendChild(document.createElement('br'));
-    });
-
-    var paginacao = document.getElementById('paginacao-ruas');
-    if (!paginacao) {
-      paginacao = document.createElement('div');
-      paginacao.id = 'paginacao-ruas';
-      listaRuas.parentNode.appendChild(paginacao);
-    }
-    paginacao.innerHTML = '';
-    if (totalPaginas > 1) {
-      if (paginaAtualRua > 1) {
-        var btnAnt = document.createElement('button');
-        btnAnt.type = 'button';
-        btnAnt.textContent = 'Anterior';
-        btnAnt.onclick = function() { paginaAtualRua--; renderListaRuas(); };
-        paginacao.appendChild(btnAnt);
+    var filtro = buscaPrejovem.value.toLowerCase();
+    prejovens.forEach(function(item) {
+      if (item.textContent.toLowerCase().includes(filtro)) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
       }
-      paginacao.appendChild(document.createTextNode(
-        ' Página ' + paginaAtualRua + ' de ' + totalPaginas + ' '
-      ));
-      if (paginaAtualRua < totalPaginas) {
-        var btnProx = document.createElement('button');
-        btnProx.type = 'button';
-        btnProx.textContent = 'Próxima';
-        btnProx.onclick = function() { paginaAtualRua++; renderListaRuas(); };
-        paginacao.appendChild(btnProx);
-      }
-    }
-  }
-
-  buscaRua.addEventListener('input', function() {
-    paginaAtualRua = 1;
-    renderListaRuas();
+    });
   });
-
-  renderListaRuas();
 
   // Animadores
   var buscaAnimador = document.getElementById('busca-animador');
   var listaAnimadores = document.getElementById('animadores-lista');
   var animadores = Array.from(listaAnimadores.querySelectorAll('.animador-item'));
-  var animadoresPorPagina = 5;
-  var paginaAtualAnimador = 1;
-
-  function renderListaAnimadores() {
-    var filtro = buscaAnimador.value.toLowerCase();
-    var filtrados = animadores.filter(function(item) {
-      return item.textContent.toLowerCase().includes(filtro);
-    });
-
-    var totalPaginas = Math.ceil(filtrados.length / animadoresPorPagina);
-    if (paginaAtualAnimador > totalPaginas) paginaAtualAnimador = 1;
-    var inicio = (paginaAtualAnimador - 1) * animadoresPorPagina;
-    var fim = inicio + animadoresPorPagina;
-    var pagina = filtrados.slice(inicio, fim);
-
-    listaAnimadores.innerHTML = '';
-    pagina.forEach(function(item) {
-      listaAnimadores.appendChild(item);
-      listaAnimadores.appendChild(document.createElement('br'));
-    });
-
-    var paginacao = document.getElementById('paginacao-animadores');
-    if (!paginacao) {
-      paginacao = document.createElement('div');
-      paginacao.id = 'paginacao-animadores';
-      listaAnimadores.parentNode.appendChild(paginacao);
-    }
-    paginacao.innerHTML = '';
-    if (totalPaginas > 1) {
-      if (paginaAtualAnimador > 1) {
-        var btnAnt = document.createElement('button');
-        btnAnt.type = 'button';
-        btnAnt.textContent = 'Anterior';
-        btnAnt.onclick = function() { paginaAtualAnimador--; renderListaAnimadores(); };
-        paginacao.appendChild(btnAnt);
-      }
-      paginacao.appendChild(document.createTextNode(
-        ' Página ' + paginaAtualAnimador + ' de ' + totalPaginas + ' '
-      ));
-      if (paginaAtualAnimador < totalPaginas) {
-        var btnProx = document.createElement('button');
-        btnProx.type = 'button';
-        btnProx.textContent = 'Próxima';
-        btnProx.onclick = function() { paginaAtualAnimador++; renderListaAnimadores(); };
-        paginacao.appendChild(btnProx);
-      }
-    }
-  }
 
   buscaAnimador.addEventListener('input', function() {
-    paginaAtualAnimador = 1;
-    renderListaAnimadores();
+    var filtro = buscaAnimador.value.toLowerCase();
+    animadores.forEach(function(item) {
+      if (item.textContent.toLowerCase().includes(filtro)) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
   });
 
-  renderListaAnimadores();
+  // Ruas
+  var buscaRua = document.getElementById('busca-rua');
+  var listaRuas = document.getElementById('ruas-lista');
+  var ruas = Array.from(listaRuas.querySelectorAll('.rua-item'));
+
+  buscaRua.addEventListener('input', function() {
+    var filtro = buscaRua.value.toLowerCase();
+    ruas.forEach(function(item) {
+      if (item.textContent.toLowerCase().includes(filtro)) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
 });
 </script>
 {% endblock %}
