@@ -76,9 +76,9 @@ def rua_detail(request, rua_id):
     circulos_estudo = rua.circulos_estudo.all()
     grupos_familias = GrupoFamilias.objects.filter(ruas=rua)
 
-    criancas = [p for p in pessoas_conectadas if p.age_group == "criança"]
+    criancas = [p for p in pessoas_conectadas if p.age_group.lower() == "criança"]
     pre_jovens = [p for p in pessoas_conectadas if p.age_group == "Pré jovem"]
-    jovens = [p for p in pessoas_conectadas if p.age_group == "jovem"]
+    jovens = [p for p in pessoas_conectadas if p.age_group.lower() == "jovem"]
     adultos = [p for p in pessoas_conectadas if p.age_group.lower() == "adulto"]
 
     context = {
