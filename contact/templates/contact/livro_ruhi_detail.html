@@ -1,0 +1,165 @@
+{% extends "global/base.html" %}
+
+{% block content %}
+<div class="contact-header">
+  <h1>{{ livro.get_nome_livro_display }} - {{ livro.contato.first_name }} {{ livro.contato.last_name }}</h1>
+  <div class="contact-actions">
+    <a href="{% url 'contact:livro_ruhi_update' livro.pk %}" class="btn">Editar</a>
+    <a href="{% url 'contact:livro_ruhi_list' %}" class="btn btn-secondary">Voltar à Lista</a>
+  </div>
+</div>
+
+{% if confirmation == 'no' %}
+  <div class="contact-details">
+    <div class="detail-section">
+      <h3>Informações do Livro</h3>
+      <div class="detail-grid" style="display: grid; grid-template-columns: 200px 1fr; gap: 10px; margin: 20px 0;">
+        <strong>Contato:</strong>
+        <span>
+          <a href="{% url 'contact:contact' livro.contato.pk %}">
+            {{ livro.contato.first_name }} {{ livro.contato.last_name }}
+          </a>
+        </span>
+        
+        <strong>Livro:</strong>
+        <span>{{ livro.get_nome_livro_display }}</span>
+        
+        <strong>Status:</strong>
+        <span class="status-badge status-{{ livro.status }}">
+          {{ livro.get_status_display }}
+        </span>
+        
+        <strong>Data de Início:</strong>
+        <span>
+          {% if livro.data_inicio %}
+            {{ livro.data_inicio|date:"d/m/Y" }}
+          {% else %}
+            <em style="color: #999;">Não informado</em>
+          {% endif %}
+        </span>
+        
+        <strong>Data de Término:</strong>
+        <span>
+          {% if livro.data_termino %}
+            {{ livro.data_termino|date:"d/m/Y" }}
+          {% else %}
+            <em style="color: #999;">Em andamento</em>
+          {% endif %}
+        </span>
+        
+        {% if livro.duracao_estudo %}
+          <strong>Duração do Estudo:</strong>
+          <span>{{ livro.duracao_estudo }} dias</span>
+        {% elif livro.dias_em_andamento %}
+          <strong>Dias em Andamento:</strong>
+          <span>{{ livro.dias_em_andamento }} dias</span>
+        {% endif %}
+        
+        <strong>Adicionado em:</strong>
+        <span>{{ livro.created_at|date:"d/m/Y H:i" }}</span>
+        
+        <strong>Última atualização:</strong>
+        <span>{{ livro.updated_at|date:"d/m/Y H:i" }}</span>
+      </div>
+    </div>
+    
+    {% if livro.observacoes %}
+      <div class="detail-section">
+        <h3>Observações</h3>
+        <div class="description">
+          {{ livro.observacoes|linebreaks }}
+        </div>
+      </div>
+    {% endif %}
+    
+    <!-- Ações rápidas -->
+    <div class="detail-section">
+      <h3>Ações</h3>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        {% if livro.status == 'nao_iniciado' %}
+          <form method="post" action="{% url 'contact:livro_ruhi_marcar_iniciado' livro.pk %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn" style="background: #006600;">Marcar como Iniciado</button>
+          </form>
+        {% endif %}
+        
+        {% if livro.status == 'em_andamento' %}
+          <form method="post" action="{% url 'contact:livro_ruhi_marcar_concluido' livro.pk %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn" style="background: #006600;">Marcar como Concluído</button>
+          </form>
+        {% endif %}
+        
+        <a href="{% url 'contact:livro_ruhi_update' livro.pk %}" class="btn btn-secondary">Editar Detalhes</a>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <!-- Confirmação de exclusão -->
+  <div class="confirmation-section" style="background: #fff4e6; border: 2px solid #ffcc00; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="color: #cc6600; margin-top: 0;">Confirmar Exclusão</h3>
+    <p>Tem certeza que deseja excluir o livro <strong>"{{ livro.get_nome_livro_display }}"</strong>?</p>
+    <p style="color: #666;">Esta ação não pode ser desfeita. Todos os dados relacionados a este livro serão perdidos.</p>
+    
+    <div style="margin-top: 20px;">
+      <form method="post" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="confirmation" value="yes">
+        <button type="submit" class="btn btn-delete" style="background: #cc0000;">Sim, Excluir</button>
+      </form>
+      <a href="{% url 'contact:livro_ruhi_detail' livro.pk %}" class="btn btn-secondary" style="margin-left: 10px;">Cancelar</a>
+    </div>
+  </div>
+{% endif %}
+
+<style>
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.status-nao_iniciado {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.status-em_andamento {
+  background: #fff4e6;
+  color: #cc6600;
+}
+
+.status-concluido {
+  background: #e7f7e7;
+  color: #006600;
+}
+
+.status-pausado {
+  background: #ffe6e6;
+  color: #cc0000;
+}
+
+.detail-section {
+  margin: 30px 0;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.detail-section h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 8px;
+}
+
+.contact-details {
+  margin-top: 20px;
+}
+</style>
+
+{% endblock %}

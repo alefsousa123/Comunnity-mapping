@@ -1,4 +1,6 @@
 {% extends "global/base.html" %}
+{% load static %}
+{% load static %}
 {% block content %}
 <h1>{{site_title}}</h1>
 <div class="form-wrapper">
@@ -19,6 +21,128 @@
               {% endfor %}
             </div>
           {% endif %}
+        </div>
+        
+        <!-- Campos de ciclo mostrados condicionalmente quando RD está marcado -->
+        <div id="cycle-fields" style="display: {% if form.reuniao_devocional.value %}block{% else %}none{% endif %};">
+          {% for cycle_field in form %}
+            {% if cycle_field.name == "plano_ciclo" or cycle_field.name == "numero_ciclo_criacao" %}
+              <div class="form-content">
+                <div class="form-group">
+                  <label for="{{ cycle_field.id_for_label }}">{{ cycle_field.label }}</label>
+                  {{ cycle_field }}
+                  {% if cycle_field.help_text %}
+                    <small class="form-text text-muted">{{ cycle_field.help_text|safe }}</small>
+                  {% endif %}
+                  {% if cycle_field.errors %}
+                    <div class="errorlist">
+                      {% for error in cycle_field.errors %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        
+      {% elif field.name == "plano_ciclo" or field.name == "numero_ciclo_criacao" %}
+        <!-- Os campos de ciclo são renderizados acima no bloco condicional -->
+        
+      {% elif field.name == "rua" %}
+        <!-- Renderização customizada para rua -->
+        <div class="form-content">
+          <div class="form-group">
+            <label>{{ field.label }}</label>
+            {% if field.help_text %}
+              <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+            {% endif %}
+            
+            <!-- Botão para criar nova rua -->
+            <div style="margin: 10px 0;">
+              <a href="{% url 'contact:rua_create' %}?redirect_to_familia=true" class="btn btn-secondary" target="_blank">
+                + Criar Nova Rua
+              </a>
+            </div>
+            
+            <!-- Campo de busca -->
+            <div style="margin: 10px 0;">
+              <input type="text" id="busca-rua" placeholder="Digite para filtrar ruas..." style="width: 100%; padding: 8px;">
+            </div>
+            
+            <!-- Lista de ruas -->
+            <div id="ruas-lista" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 0.5em;">
+              {% for rua in ruas %}
+                <label class="rua-item" style="display: block; margin: 5px 0; {% if new_rua_id and rua.pk|stringformat:'s' == new_rua_id %}background-color: #e7f3ff; border: 2px solid #0066cc; padding: 5px; border-radius: 3px;{% endif %}">
+                  <input type="radio" name="rua" value="{{ rua.pk }}"
+                    {% if rua.pk == form.rua.value or new_rua_id and rua.pk|stringformat:'s' == new_rua_id %}checked{% endif %}>
+                  {{ rua.nome }}
+                  {% if rua.bairro %}
+                    <small style="color: #666;">({{ rua.bairro }})</small>
+                  {% endif %}
+                  {% if new_rua_id and rua.pk|stringformat:'s' == new_rua_id %}
+                    <small style="color: #0066cc; font-weight: bold;"> ✓ Recém-criada</small>
+                  {% endif %}
+                </label>
+              {% endfor %}
+            </div>
+            
+            {% if field.errors %}
+              <div class="errorlist">
+                {% for error in field.errors %}
+                  <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% elif field.name == "membros" %}
+        <!-- Renderização customizada para membros -->
+        <div class="form-content">
+          <div class="form-group">
+            <label>{{ field.label }}</label>
+            {% if field.help_text %}
+              <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+            {% endif %}
+            
+            <!-- Botão para criar novo contato -->
+            <div style="margin: 10px 0;">
+              <a href="{% url 'contact:create' %}?redirect_to_familia=true" class="btn btn-secondary" target="_blank">
+                + Criar Novo Contato
+              </a>
+            </div>
+            
+            <!-- Campo de busca -->
+            <div style="margin: 10px 0;">
+              <input type="text" id="busca-membro" placeholder="Digite para filtrar contatos..." style="width: 100%; padding: 8px;">
+            </div>
+            
+            <!-- Lista de contatos com paginação -->
+            <div id="membros-lista" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 0.5em;">
+              {% for contato in contatos %}
+                <label class="membro-item" style="display: block; margin: 5px 0; {% if new_contact_id and contato.pk|stringformat:'s' == new_contact_id %}background-color: #e7f3ff; border: 2px solid #0066cc; padding: 5px; border-radius: 3px;{% endif %}">
+                  <input type="checkbox" name="membros" value="{{ contato.pk }}"
+                    {% if contato.pk|stringformat:"s" in form.data.membros or contato in form.instance.membros.all or new_contact_id and contato.pk|stringformat:'s' == new_contact_id %}checked{% endif %}>
+                  {{ contato.first_name }} {{ contato.last_name }}
+                  {% if contato.familia %}
+                    <small style="color: #666;">({{ contato.familia.nome }})</small>
+                  {% endif %}
+                  {% if new_contact_id and contato.pk|stringformat:'s' == new_contact_id %}
+                    <small style="color: #0066cc; font-weight: bold;"> ✓ Recém-criado</small>
+                  {% endif %}
+                </label>
+              {% endfor %}
+            </div>
+            
+            {% if field.errors %}
+              <div class="errorlist">
+                {% for error in field.errors %}
+                  <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
         </div>
       {% else %}
         <div class="form-content">
@@ -46,4 +170,94 @@
     </div>
   </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Controle dos campos de ciclo baseado no checkbox de RD
+  var reuniaoDevocionalCheckbox = document.querySelector('input[name="reuniao_devocional"]');
+  var cycleFields = document.getElementById('cycle-fields');
+  
+  if (reuniaoDevocionalCheckbox && cycleFields) {
+    reuniaoDevocionalCheckbox.addEventListener('change', function() {
+      if (this.checked) {
+        cycleFields.style.display = 'block';
+      } else {
+        cycleFields.style.display = 'none';
+        // Limpar os valores quando ocultar
+        var planoSelect = cycleFields.querySelector('select[name="plano_ciclo"]');
+        var cicloSelect = cycleFields.querySelector('select[name="numero_ciclo_criacao"]');
+        if (planoSelect) planoSelect.value = '';
+        if (cicloSelect) cicloSelect.value = '';
+      }
+    });
+  }
+  
+  // Busca de membros
+  var buscaMembro = document.getElementById('busca-membro');
+  var listaMembros = document.getElementById('membros-lista');
+  
+  if (buscaMembro && listaMembros) {
+    var membros = Array.from(listaMembros.querySelectorAll('.membro-item'));
+    
+    buscaMembro.addEventListener('input', function() {
+      var filtro = buscaMembro.value.toLowerCase();
+      membros.forEach(function(item) {
+        var texto = item.textContent.toLowerCase();
+        if (texto.includes(filtro)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  }
+  
+  // Busca de ruas
+  var buscaRua = document.getElementById('busca-rua');
+  var listaRuas = document.getElementById('ruas-lista');
+  
+  if (buscaRua && listaRuas) {
+    var ruas = Array.from(listaRuas.querySelectorAll('.rua-item'));
+    
+    buscaRua.addEventListener('input', function() {
+      var filtro = buscaRua.value.toLowerCase();
+      ruas.forEach(function(item) {
+        var texto = item.textContent.toLowerCase();
+        if (texto.includes(filtro)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  }
+  
+  // Detectar se uma nova janela de contato ou rua foi fechada
+  window.addEventListener('focus', function() {
+    // Recarregar a página se detectar que voltamos de criar contato ou rua
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('new_contact_id') || urlParams.get('new_rua_id')) {
+      // Scroll para a seção apropriada para mostrar o novo item
+      setTimeout(function() {
+        if (urlParams.get('new_contact_id')) {
+          var membrosLista = document.getElementById('membros-lista');
+          if (membrosLista) {
+            membrosLista.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+        if (urlParams.get('new_rua_id')) {
+          var ruasLista = document.getElementById('ruas-lista');
+          if (ruasLista) {
+            ruasLista.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }, 100);
+    }
+  });
+});
+</script>
+
+<!-- Incluir JavaScript para funcionalidade de ciclos -->
+<script src="{% static 'global/js/cycle_selector.js' %}"></script>
+
 {% endblock %}

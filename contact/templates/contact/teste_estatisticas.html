@@ -1,0 +1,87 @@
+{% extends 'global/base.html' %}
+
+{% block title %}TESTE - Editar Estatísticas{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header de Teste -->
+            <div class="text-center mb-4" style="background: yellow; padding: 20px;">
+                <h1 class="display-5">🧪 PÁGINA DE TESTE - Editar Estatísticas</h1>
+                <p class="lead text-dark">Esta é uma versão de teste para verificar se está funcionando</p>
+                
+                <!-- Botão de Configurações GRANDE para teste -->
+                <div class="btn-group" role="group">
+                    <a href="{% url 'contact:dashboard_estatisticas' %}" class="btn btn-outline-secondary btn-lg">
+                        ← Voltar ao Dashboard
+                    </a>
+                    <a href="{% url 'contact:editar_configuracao' %}" class="btn btn-danger btn-lg" style="font-size: 24px;">
+                        🔧 CONFIGURAÇÕES - CLIQUE AQUI
+                    </a>
+                </div>
+            </div>
+
+            <!-- Seção de Teste do Detalhamento -->
+            <div style="background: linear-gradient(145deg, #fff3cd, #f8f9fa); border: 5px solid #ff0000; padding: 30px; margin: 20px 0;">
+                <h2 style="color: red; text-align: center;">🔥 DETALHAMENTO EDITÁVEL PELO USUÁRIO 🔥</h2>
+                <p style="font-size: 18px; text-align: center;">Se você está vendo esta seção, o detalhamento foi implementado!</p>
+                
+                <!-- Formulário de Teste -->
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div style="background: yellow; padding: 20px; margin: 10px 0;">
+                        <h3>👥 TESTE - Detalhamento Pré-jovens</h3>
+                        <label for="test_animadores">Número de Animadores:</label>
+                        <input type="number" name="detalhes_prejovens_animadores" id="test_animadores" 
+                               value="0" class="form-control form-control-lg" style="font-size: 20px;">
+                    </div>
+                    
+                    <div style="background: lightgreen; padding: 20px; margin: 10px 0;">
+                        <h3>🎨 TESTE - Detalhamento Crianças</h3>
+                        <label for="test_professores">Número de Professores:</label>
+                        <input type="number" name="detalhes_criancas_professores" id="test_professores" 
+                               value="0" class="form-control form-control-lg" style="font-size: 20px;">
+                    </div>
+                    
+                    <div style="background: lightblue; padding: 20px; margin: 10px 0;">
+                        <h3>📚 TESTE - Detalhamento Círculos</h3>
+                        <label for="test_tutores">Número de Tutores:</label>
+                        <input type="number" name="detalhes_circulos_tutores" id="test_tutores" 
+                               value="0" class="form-control form-control-lg" style="font-size: 20px;">
+                    </div>
+                    
+                    <div style="background: orange; padding: 20px; margin: 10px 0;">
+                        <h3>🕯️ TESTE - Detalhamento Reuniões Devocionais</h3>
+                        <label for="test_facilitadores">Número de Facilitadores:</label>
+                        <input type="number" name="detalhes_devocionais_facilitadores" id="test_facilitadores" 
+                               value="0" class="form-control form-control-lg" style="font-size: 20px;">
+                        
+                        <label for="test_participantes_bahais">Participantes Bahá'ís:</label>
+                        <input type="number" name="detalhes_devocionais_participantes_bahais" id="test_participantes_bahais" 
+                               value="0" class="form-control form-control-lg" style="font-size: 20px;">
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-success btn-lg" style="font-size: 24px;">
+                            💾 SALVAR TESTE
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Dados de Debug -->
+            <div style="background: #f0f0f0; padding: 20px; margin: 20px 0;">
+                <h3>🔍 Informações de Debug:</h3>
+                <p><strong>Usuário logado:</strong> {{ user.username }}</p>
+                <p><strong>Grupos de Pré-jovens:</strong> {{ grupos_prejovens|length }}</p>
+                <p><strong>Aulas para Crianças:</strong> {{ aulas_criancas|length }}</p>
+                <p><strong>Círculos de Estudo:</strong> {{ circulos_estudo|length }}</p>
+                <p><strong>Reuniões Devocionais:</strong> {{ reunioes_devocionais|length }}</p>
+                <p><strong>Estatísticas BD:</strong> {{ estatisticas_bd.grupos_prejovens }} grupos</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

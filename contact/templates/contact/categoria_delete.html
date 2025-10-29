@@ -1,0 +1,129 @@
+{% extends 'global/base.html' %}
+{% load i18n %}
+
+{% block title %}Confirmar Exclusão{% endblock title %}
+
+{% block content %}
+<div class="main-content container">
+    <div class="main-content-header">
+        <h2>
+            <i class="fas fa-exclamation-triangle text-danger"></i>
+            Confirmar Exclusão
+        </h2>
+        <div class="actions">
+            <a href="{% url 'contact:livro_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content-form">
+        <div class="alert alert-danger">
+            <h4 class="alert-heading">
+                <i class="fas fa-exclamation-triangle"></i>
+                Atenção!
+            </h4>
+            <p>
+                Você está prestes a excluir a categoria <strong>"{{ categoria.nome }}"</strong>.
+            </p>
+            
+            {% if categoria.total_livros > 0 %}
+                <hr>
+                <p class="mb-0">
+                    <i class="fas fa-times-circle"></i>
+                    <strong>Esta categoria não pode ser excluída</strong> porque possui {{ categoria.total_livros }} livro(s) associado(s).
+                </p>
+                <p class="mb-0">
+                    Para excluir esta categoria, primeiro você deve mover todos os livros para outra categoria ou excluí-los.
+                </p>
+            {% else %}
+                <hr>
+                <p class="mb-0">
+                    <i class="fas fa-check-circle"></i>
+                    Esta categoria pode ser excluída com segurança pois não possui livros associados.
+                </p>
+            {% endif %}
+        </div>
+
+        {% if categoria.total_livros > 0 %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-book"></i>
+                        Livros Associados ({{ categoria.total_livros }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for livro in categoria.livros_ordenados %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Livro {{ livro.numero }}</strong>
+                                    {% if livro.titulo %}
+                                        - {{ livro.titulo }}
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'contact:livro_edit' livro.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                    Editar
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="form-actions">
+            {% if categoria.total_livros == 0 %}
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i>
+                        Sim, Excluir Categoria
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'contact:categoria_edit' categoria.pk %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i>
+                    Editar Categoria
+                </a>
+            {% endif %}
+            <a href="{% url 'contact:livro_list' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i>
+                Cancelar
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.form-actions .btn {
+    margin-right: 0.5rem;
+}
+
+.card {
+    margin-top: 1rem;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+</style>
+{% endblock content %}

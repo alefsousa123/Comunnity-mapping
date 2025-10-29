@@ -7,4 +7,5 @@ from .family_group_views import *
 from .abc_views import *
 from .junior_youth_views import *
 from .study_circle_views import *
+from .livro_views import *
 

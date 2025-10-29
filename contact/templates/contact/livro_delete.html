@@ -1,0 +1,119 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="responsive-table">
+    <table class="contacts-table">
+        <caption class="table-caption">
+            Excluir {{ livro }}
+            <div class="caption-actions">
+                <a href="{% url 'contact:livro_list' %}" class="btn btn-link">← Voltar para Livros</a>
+            </div>
+        </caption>
+        <tbody>
+            <tr>
+                <td class="table-cel">
+                    <div class="delete-confirmation">
+                        <div class="warning-icon">
+                            ⚠️
+                        </div>
+                        
+                        <h3>Confirmar Exclusão</h3>
+                        
+                        <p>Tem certeza que deseja excluir o livro:</p>
+                        <div class="book-info">
+                            <strong>{{ livro }}</strong>
+                        </div>
+                        
+                        {% if livro.descricao %}
+                        <p><em>{{ livro.descricao }}</em></p>
+                        {% endif %}
+                        
+                        <div class="warning-message">
+                            <strong>Atenção:</strong> Esta ação não pode ser desfeita. 
+                            O livro será permanentemente removido do sistema.
+                        </div>
+                        
+                        <div class="form-actions">
+                            <form method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">
+                                    Sim, Excluir Livro
+                                </button>
+                            </form>
+                            <a href="{% url 'contact:livro_list' %}" class="btn btn-link">
+                                Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<style>
+.delete-confirmation {
+    padding: 2rem;
+    text-align: center;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.warning-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.delete-confirmation h3 {
+    color: #dc3545;
+    margin-bottom: 1rem;
+}
+
+.book-info {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    margin: 1rem 0;
+    border-left: 4px solid #dc3545;
+}
+
+.warning-message {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    margin: 1.5rem 0;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.caption-actions .btn {
+    margin-left: 0.5rem;
+}
+</style>
+{% endblock %}

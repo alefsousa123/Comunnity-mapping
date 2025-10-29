@@ -1,0 +1,227 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title mb-0">
+                            <i class="fas fa-user-graduate"></i> Estudos de {{ contato.first_name }}
+                        </h4>
+                        <small class="text-muted">Acompanhe o progresso de {{ contato.first_name }} {{ contato.last_name }}</small>
+                    </div>
+                    <div>
+                        <a href="{% url 'contact:contact' contato.pk %}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-user"></i> Ver Perfil
+                        </a>
+                        <a href="{% url 'contact:livro_list' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-book"></i> Ver Todos os Livros
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Informações do Contato -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-lg bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                                    {{ contato.first_name|first }}{{ contato.last_name|first }}
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">{{ contato.first_name }} {{ contato.last_name }}</h5>
+                                    {% if contato.birth_date %}
+                                        <p class="text-muted mb-0">{{ contato.age_group }} • {{ contato.age }} anos</p>
+                                    {% endif %}
+                                    {% if contato.familia %}
+                                        <small class="text-muted">Família: {{ contato.familia.nome }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h3 class="text-primary mb-0">{{ estudos.count }}</h3>
+                                <small class="text-muted">Total de Estudos</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Estatísticas Rápidas -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <h4 class="text-success">{{ estudos|where:'status','concluido'|length }}</h4>
+                                    <small class="text-muted">Concluídos</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h4 class="text-primary">{{ estudos|where:'status','em_andamento'|length }}</h4>
+                                    <small class="text-muted">Em Andamento</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h4 class="text-warning">{{ estudos|where:'status','pausado'|length }}</h4>
+                                    <small class="text-muted">Pausados</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-secondary">
+                                <div class="card-body text-center">
+                                    <h4 class="text-secondary">{{ estudos|where:'status','nao_iniciado'|length }}</h4>
+                                    <small class="text-muted">Não Iniciados</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lista de Estudos -->
+                    {% if estudos %}
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-books"></i> Lista de Estudos
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Livro</th>
+                                                <th>Status</th>
+                                                <th>Data Início</th>
+                                                <th>Data Término</th>
+                                                <th>Progresso</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for estudo in estudos %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="bg-info text-white rounded px-2 py-1 me-2" style="font-size: 0.8rem; font-weight: 600;">
+                                                                {{ estudo.livro.numero }}
+                                                            </div>
+                                                            <div>
+                                                                <strong>{{ estudo.livro.titulo|truncatewords:4 }}</strong>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {% if estudo.status == 'concluido' %}
+                                                            <span class="badge bg-success">{{ estudo.get_status_display }}</span>
+                                                        {% elif estudo.status == 'em_andamento' %}
+                                                            <span class="badge bg-primary">{{ estudo.get_status_display }}</span>
+                                                        {% elif estudo.status == 'pausado' %}
+                                                            <span class="badge bg-warning">{{ estudo.get_status_display }}</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">{{ estudo.get_status_display }}</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if estudo.data_inicio %}
+                                                            {{ estudo.data_inicio|date:"d/m/Y" }}
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if estudo.data_termino %}
+                                                            {{ estudo.data_termino|date:"d/m/Y" }}
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if estudo.duracao_estudo %}
+                                                            <small class="text-success">{{ estudo.duracao_estudo }} dias</small>
+                                                        {% elif estudo.dias_em_andamento %}
+                                                            <small class="text-info">{{ estudo.dias_em_andamento }} dias</small>
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group btn-group-sm">
+                                                            <a href="{% url 'contact:estudo_detail' estudo.pk %}" 
+                                                               class="btn btn-outline-info" title="Ver detalhes">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            <a href="{% url 'contact:estudo_update' estudo.pk %}" 
+                                                               class="btn btn-outline-primary" title="Editar">
+                                                                <i class="fas fa-edit"></i>
+                                                            </a>
+                                                            <a href="{% url 'contact:estudo_delete' estudo.pk %}" 
+                                                               class="btn btn-outline-danger" title="Deletar">
+                                                                <i class="fas fa-trash"></i>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhum estudo registrado</h5>
+                            <p class="text-muted">{{ contato.first_name }} ainda não possui estudos de livros registrados.</p>
+                            <a href="{% url 'contact:livro_list' %}" class="btn btn-primary">
+                                <i class="fas fa-book"></i> Ver Livros Disponíveis
+                            </a>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Ações -->
+                    <div class="mt-4 d-flex justify-content-between">
+                        <a href="{% url 'contact:index' %}" class="btn btn-secondary">
+                            <i class="fas fa-users"></i> Lista de Contatos
+                        </a>
+                        <div>
+                            <a href="{% url 'contact:contact' contato.pk %}" class="btn btn-outline-info me-2">
+                                <i class="fas fa-user"></i> Ver Perfil Completo
+                            </a>
+                            <a href="{% url 'contact:livro_list' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-book"></i> Ver Todos os Livros
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-lg {
+    width: 70px;
+    height: 70px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+}
+
+.card-title {
+    color: #495057;
+}
+</style>
+{% endblock %}

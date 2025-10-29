@@ -1,0 +1,192 @@
+{% extends 'global/base.html' %}
+
+{% block title %}{{ site_title }}{% endblock title %}
+
+{% block content %}
+<div class="container-lg">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="h4 mb-2">
+                        <i class="fa fa-book text-primary me-2"></i>
+                        Livros Ruhi - {{ contato.first_name }} {{ contato.last_name }}
+                    </h3>
+                    <small class="text-muted">
+                        <i class="fa fa-envelope me-1"></i>{{ contato.email }}
+                        {% if contato.phone %}
+                        | <i class="fa fa-phone me-1"></i>{{ contato.phone }}
+                        {% endif %}
+                    </small>
+                </div>
+                <div>
+                    <a href="{% url 'contact:livro_ruhi_create' %}" class="btn btn-primary">
+                        <i class="fa fa-plus me-1"></i>Adicionar Livro
+                    </a>
+                    <a href="{% url 'contact:contact' contato.id %}" class="btn btn-outline-secondary">
+                        <i class="fa fa-user me-1"></i>Ver Contato
+                    </a>
+                    <a href="{% url 'contact:livro_ruhi_list' %}" class="btn btn-outline-primary">
+                        <i class="fa fa-list me-1"></i>Todos os Livros
+                    </a>
+                </div>
+            </div>
+
+            {% if livros %}
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body py-3">
+                                <h5 class="card-title text-primary mb-1">{{ livros|length }}</h5>
+                                <p class="card-text small mb-0">Total de Livros</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-success text-white">
+                            <div class="card-body py-3">
+                                <h5 class="card-title mb-1">{{ livros|dictsort:"status"|slice:":0"|length|default:0 }}</h5>
+                                <p class="card-text small mb-0">Concluídos</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-warning text-white">
+                            <div class="card-body py-3">
+                                <h5 class="card-title mb-1">
+                                    {% for livro in livros %}
+                                        {% if livro.status == 'em_andamento' %}
+                                            {% if forloop.first %}1{% endif %}
+                                        {% endif %}
+                                    {% empty %}0{% endfor %}
+                                </h5>
+                                <p class="card-text small mb-0">Em Andamento</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-secondary text-white">
+                            <div class="card-body py-3">
+                                <h5 class="card-title mb-1">
+                                    {% for livro in livros %}
+                                        {% if livro.status == 'nao_iniciado' %}
+                                            {% if forloop.first %}1{% endif %}
+                                        {% endif %}
+                                    {% empty %}0{% endfor %}
+                                </h5>
+                                <p class="card-text small mb-0">Não Iniciados</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fa fa-list me-2"></i>Livros de {{ contato.first_name }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Livro</th>
+                                        <th>Status</th>
+                                        <th>Data Início</th>
+                                        <th>Data Término</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for livro in livros %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ livro.get_nome_livro_display }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if livro.status == 'concluido' %}
+                                                <span class="badge bg-success">
+                                                    <i class="fa fa-check me-1"></i>Concluído
+                                                </span>
+                                            {% elif livro.status == 'em_andamento' %}
+                                                <span class="badge bg-warning">
+                                                    <i class="fa fa-clock me-1"></i>Em Andamento
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fa fa-pause me-1"></i>Não Iniciado
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if livro.data_inicio %}
+                                                {{ livro.data_inicio|date:"d/m/Y" }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if livro.data_termino %}
+                                                {{ livro.data_termino|date:"d/m/Y" }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{% url 'contact:livro_ruhi_detail' livro.pk %}" 
+                                                   class="btn btn-outline-primary btn-sm" 
+                                                   title="Ver detalhes">
+                                                    <i class="fa fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'contact:livro_ruhi_update' livro.pk %}" 
+                                                   class="btn btn-outline-warning btn-sm" 
+                                                   title="Editar">
+                                                    <i class="fa fa-edit"></i>
+                                                </a>
+                                                {% if livro.status == 'nao_iniciado' %}
+                                                <form method="post" action="{% url 'contact:livro_ruhi_marcar_iniciado' livro.pk %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-outline-success btn-sm" title="Marcar como iniciado">
+                                                        <i class="fa fa-play"></i>
+                                                    </button>
+                                                </form>
+                                                {% elif livro.status == 'em_andamento' %}
+                                                <form method="post" action="{% url 'contact:livro_ruhi_marcar_concluido' livro.pk %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-outline-success btn-sm" title="Marcar como concluído">
+                                                        <i class="fa fa-check"></i>
+                                                    </button>
+                                                </form>
+                                                {% endif %}
+                                                <a href="{% url 'contact:livro_ruhi_delete' livro.pk %}" 
+                                                   class="btn btn-outline-danger btn-sm" 
+                                                   title="Excluir">
+                                                    <i class="fa fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fa fa-book-open fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Nenhum livro cadastrado para {{ contato.first_name }}</h5>
+                        <p class="text-muted mb-4">Comece adicionando o primeiro livro do Instituto Ruhi que {{ contato.first_name }} está estudando.</p>
+                        <a href="{% url 'contact:livro_ruhi_create' %}" class="btn btn-primary">
+                            <i class="fa fa-plus me-2"></i>Adicionar Primeiro Livro
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

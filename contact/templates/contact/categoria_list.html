@@ -1,0 +1,88 @@
+{% extends 'global/base.html' %}
+{% load i18n %}
+
+{% block title %}Gerenciar Categorias{% endblock title %}
+
+{% block content %}
+<div class="main-content container">
+    <div class="main-content-header">
+        <h2>
+            <i class="fas fa-tags"></i>
+            Gerenciar Categorias
+        </h2>
+        <div class="actions">
+            <a href="{% url 'contact:categoria_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                Nova Categoria
+            </a>
+            <a href="{% url 'contact:livro_list' %}" class="btn btn-secondary">
+                <i class="fas fa-book"></i>
+                Ver Livros
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content-list">
+        {% if categorias %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Cor</th>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>Ordem</th>
+                            <th>Total de Livros</th>
+                            <th>Status</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for categoria in categorias %}
+                            <tr>
+                                <td>
+                                    <div style="width: 20px; height: 20px; background-color: {{ categoria.cor }}; border-radius: 3px; border: 1px solid #ddd;"></div>
+                                </td>
+                                <td>
+                                    <strong>{{ categoria.nome }}</strong>
+                                </td>
+                                <td>{{ categoria.descricao|default:"-" }}</td>
+                                <td>{{ categoria.ordem }}</td>
+                                <td>{{ categoria.total_livros }}</td>
+                                <td>
+                                    {% if categoria.ativo %}
+                                        <span class="badge bg-success">Ativo</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inativo</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'contact:categoria_edit' categoria.pk %}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Editar categoria">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'contact:categoria_delete' categoria.pk %}" 
+                                           class="btn btn-sm btn-outline-danger" 
+                                           title="Excluir categoria"
+                                           onclick="return confirm('Tem certeza que deseja excluir esta categoria? Esta ação não pode ser desfeita.')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                Nenhuma categoria cadastrada ainda.
+                <a href="{% url 'contact:categoria_create' %}" class="alert-link">Clique aqui para criar a primeira categoria</a>.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

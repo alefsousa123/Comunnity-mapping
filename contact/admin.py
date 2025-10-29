@@ -82,3 +82,47 @@ class CirculoEstudoAdmin(admin.ModelAdmin):
     search_fields = ("nome", "livro", "unidade", "secao")
     list_filter = ("dia_semana",)
     filter_horizontal = ("participantes",)
+
+
+@admin.register(models.CategoriaLivro)
+class CategoriaLivroAdmin(admin.ModelAdmin):
+    list_display = ("id", "nome", "created_at")
+    search_fields = ("nome",)
+    list_filter = ("created_at",)
+
+
+@admin.register(models.Livro)
+class LivroAdmin(admin.ModelAdmin):
+    list_display = ("id", "titulo", "categoria", "created_at")
+    search_fields = ("titulo",)
+    list_filter = ("categoria", "created_at")
+
+
+@admin.register(models.EstudoAtual)
+class EstudoAtualAdmin(admin.ModelAdmin):
+    list_display = ("id", "contato", "livro", "status", "data_inicio")
+    search_fields = ("contato__first_name", "contato__last_name", "livro__titulo")
+    list_filter = ("status", "livro__categoria", "data_inicio")
+
+
+@admin.register(models.ConfiguracaoEstatisticas)
+class ConfiguracaoEstatisticasAdmin(admin.ModelAdmin):
+    list_display = ("id", "titulo_plano", "data_inicio_plano", "ativo", "created_at")
+    search_fields = ("titulo_plano",)
+    list_filter = ("ativo", "created_at")
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(models.EstatisticasEditaveis)
+class EstatisticasEditaveisAdmin(admin.ModelAdmin):
+    list_display = ("id", "total_participantes", "total_participantes_bahais", "updated_at")
+    list_filter = ("updated_at",)
+    readonly_fields = ("total_participantes", "total_participantes_bahais")
+
+
+@admin.register(models.ReuniaoDevocional)
+class ReuniaoDevocionalAdmin(admin.ModelAdmin):
+    list_display = ("nome", "rua", "numero_participantes", "ativa", "dia_semana", "created_at")
+    search_fields = ("nome", "descricao", "local_detalhes")
+    list_filter = ("ativa", "frequencia", "dia_semana", "created_at")
+    readonly_fields = ("created_at", "updated_at")

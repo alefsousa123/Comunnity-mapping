@@ -1,0 +1,478 @@
+{% extends 'global/base.html' %}
+
+{% block title %}Gerenciar Histórico de Ciclos{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white text-center py-4">
+                    <h2 class="mb-2">📊 Gerenciar Histórico de Ciclos</h2>
+                    <p class="mb-0 opacity-75">Crie e edite dados históricos para análise de crescimento</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações do Ciclo Atual -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-light" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0">ℹ️ Informações do Sistema</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                <strong>Ciclo Atual:</strong>
+                                <span class="ms-2 badge bg-primary">{{ ciclo_atual.numero }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-clock text-success me-2"></i>
+                                <strong>Duração:</strong>
+                                <span class="ms-2">{{ configuracao.duracao_ciclo }} dias</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-calendar-check text-info me-2"></i>
+                                <strong>Período Atual:</strong>
+                                <span class="ms-2">{{ ciclo_atual.inicio|date:"d/m/Y" }} - {{ ciclo_atual.fim|date:"d/m/Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Históricos Existentes -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-success text-white" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0">📋 Históricos Existentes</h5>
+                </div>
+                <div class="card-body">
+                    {% if historicos %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Ciclo</th>
+                                        <th>Período</th>
+                                        <th>Atividades</th>
+                                        <th>Participantes</th>
+                                        <th>Livros</th>
+                                        <th>Detalhes</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for historico in historicos %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-primary fs-6">{{ historico.numero_ciclo }}</span>
+                                        </td>
+                                        <td>
+                                            <small>{{ historico.data_inicio|date:"d/m/Y" }} - {{ historico.data_fim|date:"d/m/Y" }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-primary">{{ historico.total_circulos_estudo|add:historico.total_grupos_prejovens|add:historico.total_aulas_criancas|add:historico.total_reunioes_devocionais|add:historico.total_grupos_familias }}</span>
+                                            {% if historico.crescimento_atividades != 0 %}
+                                                <small class="{% if historico.crescimento_atividades > 0 %}text-success{% else %}text-danger{% endif %}">
+                                                    ({% if historico.crescimento_atividades > 0 %}+{% endif %}{{ historico.crescimento_atividades|floatformat:1 }}%)
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-success">{{ historico.participantes_circulos|add:historico.participantes_prejovens|add:historico.participantes_criancas|add:historico.participantes_devocionais|add:historico.participantes_grupos_familias }}</span>
+                                            {% if historico.crescimento_participantes != 0 %}
+                                                <small class="{% if historico.crescimento_participantes > 0 %}text-success{% else %}text-danger{% endif %}">
+                                                    ({% if historico.crescimento_participantes > 0 %}+{% endif %}{{ historico.crescimento_participantes|floatformat:1 }}%)
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="mb-2">
+                                                <span class="fw-bold text-info">{{ historico.total_livros }}</span>
+                                                {% if historico.crescimento_livros != 0 %}
+                                                    <small class="{% if historico.crescimento_livros > 0 %}text-success{% else %}text-danger{% endif %}">
+                                                        ({% if historico.crescimento_livros > 0 %}+{% endif %}{{ historico.crescimento_livros|floatformat:1 }}%)
+                                                    </small>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            {% if historico.livros_detalhados %}
+                                                <div class="small">
+                                                    {% regroup historico.livros_detalhados by categoria as livros_por_categoria %}
+                                                    {% for categoria in livros_por_categoria %}
+                                                        <div class="mb-1">
+                                                            <strong class="text-muted">
+                                                                {% if categoria.grouper == 'sequencia' %}📚 Sequência:
+                                                                {% elif categoria.grouper == 'abc' %}👶 ABC:
+                                                                {% elif categoria.grouper == 'prejovens' %}🎯 Pré-jovens:
+                                                                {% else %}📖 Outros:
+                                                                {% endif %}
+                                                            </strong>
+                                                            <div class="ms-2">
+                                                                {% for livro in categoria.list %}
+                                                                    <span class="badge bg-light text-dark me-1 mb-1" style="font-size: 0.7rem;">
+                                                                        {{ livro.nome_livro }}: 
+                                                                        <span class="text-primary">{{ livro.quantidade_iniciados }}i</span>
+                                                                        {% if livro.quantidade_concluidos > 0 %}
+                                                                            / <span class="text-success">{{ livro.quantidade_concluidos }}c</span>
+                                                                        {% endif %}
+                                                                    </span>
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <small class="text-muted">Nenhum livro específico registrado</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-info" onclick="mostrarDetalhes({{ historico.id }}, {{ historico.numero_ciclo }})" title="Ver detalhes">
+                                                <i class="fas fa-chart-bar"></i>
+                                            </button>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'contact:criar_historico' historico.numero_ciclo %}" 
+                                                   class="btn btn-sm btn-outline-primary" title="Editar dados editáveis">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'contact:atualizar_dados_sistema_historico' historico.id %}" 
+                                                   class="btn btn-sm btn-outline-success" title="Atualizar dados do sistema">
+                                                    <i class="fas fa-sync"></i>
+                                                </a>
+                                                <button onclick="excluirHistorico({{ historico.id }}, {{ historico.numero_ciclo }})" 
+                                                        class="btn btn-sm btn-outline-danger" title="Excluir">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if historicos %}
+                        <div class="d-flex justify-content-end mt-3">
+                            <form method="post" action="{% url 'contact:atualizar_todos_dados_sistema' %}" 
+                                  onsubmit="return confirm('Atualizar dados do sistema para todos os históricos? Isso pode demorar alguns minutos.')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-sync"></i> Atualizar Todos os Dados do Sistema
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-history fa-3x mb-3"></i>
+                            <p>Nenhum histórico criado ainda.</p>
+                            <p>Crie históricos de ciclos anteriores para análise de crescimento.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Criar Novos Históricos -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-warning text-dark" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0">➕ Criar Histórico</h5>
+                </div>
+                <div class="card-body">
+                    {% if ciclos_sugeridos %}
+                        <p class="text-muted mb-3">Ciclos anteriores sugeridos:</p>
+                        {% for ciclo in ciclos_sugeridos %}
+                            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                                <div>
+                                    <strong>Ciclo {{ ciclo.numero }}</strong><br>
+                                    <small class="text-muted">{{ ciclo.inicio|date:"d/m/Y" }} - {{ ciclo.fim|date:"d/m/Y" }}</small>
+                                </div>
+                                <a href="{% url 'contact:criar_historico' ciclo.numero %}" 
+                                   class="btn btn-sm btn-warning">
+                                    <i class="fas fa-plus"></i> Criar
+                                </a>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <i class="fas fa-check-circle fa-2x mb-2"></i>
+                            <p>Todos os ciclos recentes já possuem histórico!</p>
+                        </div>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    <!-- Criar ciclo personalizado -->
+                    <div class="mt-3">
+                        <label class="form-label">Ou criar ciclo específico:</label>
+                        <div class="input-group">
+                            <input type="number" id="numeroCicloCustom" class="form-control" 
+                                   placeholder="Número do ciclo" min="1" max="{{ ciclo_atual.numero|add:'-1' }}">
+                            <button onclick="criarCicloCustom()" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Máximo: Ciclo {{ ciclo_atual.numero|add:'-1' }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botões de Navegação -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="{% url 'contact:statistics_dashboard' %}" class="btn btn-secondary me-2">
+                <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+            </a>
+            <a href="{% url 'contact:editar_configuracao' %}" class="btn btn-outline-primary">
+                <i class="fas fa-cog"></i> Configurações
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação -->
+<div class="modal fade" id="modalConfirmacao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o histórico do <strong id="cicloExcluir"></strong>?</p>
+                <p class="text-danger"><small><i class="fas fa-exclamation-triangle"></i> Esta ação não pode ser desfeita.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formExcluir" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalhes -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">📊 Detalhes do <span id="cicloDetalhes"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6 class="mb-3">📚 Livros por Categoria</h6>
+                
+                <!-- Tabs para categorias -->
+                <nav>
+                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                        <button class="nav-link active" id="nav-sequencia-tab" data-bs-toggle="tab" data-bs-target="#nav-sequencia" type="button">📘 Sequência</button>
+                        <button class="nav-link" id="nav-abc-tab" data-bs-toggle="tab" data-bs-target="#nav-abc" type="button">🎨 ABC</button>
+                        <button class="nav-link" id="nav-prejovens-tab" data-bs-toggle="tab" data-bs-target="#nav-prejovens" type="button">🌟 Pré-jovens</button>
+                        <button class="nav-link" id="nav-outros-tab" data-bs-toggle="tab" data-bs-target="#nav-outros" type="button">📖 Outros</button>
+                    </div>
+                </nav>
+                
+                <div class="tab-content" id="nav-tabContent">
+                    <div class="tab-pane fade show active" id="nav-sequencia">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6 class="text-success">✅ Iniciados</h6>
+                                <div id="livrosSequenciaIniciados" class="small"></div>
+                                <strong>Total: <span id="totalSequenciaIniciados">0</span></strong>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">� Concluídos</h6>
+                                <div id="livrosSequenciaConcluidos" class="small"></div>
+                                <strong>Total: <span id="totalSequenciaConcluidos">0</span></strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="nav-abc">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6 class="text-success">✅ Iniciados</h6>
+                                <div id="livrosAbcIniciados" class="small"></div>
+                                <strong>Total: <span id="totalAbcIniciados">0</span></strong>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">🏆 Concluídos</h6>
+                                <div id="livrosAbcConcluidos" class="small"></div>
+                                <strong>Total: <span id="totalAbcConcluidos">0</span></strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="nav-prejovens">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6 class="text-success">✅ Iniciados</h6>
+                                <div id="livrosPreJovensIniciados" class="small"></div>
+                                <strong>Total: <span id="totalPreJovensIniciados">0</span></strong>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">🏆 Concluídos</h6>
+                                <div id="livrosPreJovensConcluidos" class="small"></div>
+                                <strong>Total: <span id="totalPreJovensConcluidos">0</span></strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="nav-outros">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6 class="text-success">✅ Iniciados</h6>
+                                <div id="livrosOutrosIniciados" class="small"></div>
+                                <strong>Total: <span id="totalOutrosIniciados">0</span></strong>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">🏆 Concluídos</h6>
+                                <div id="livrosOutrosConcluidos" class="small"></div>
+                                <strong>Total: <span id="totalOutrosConcluidos">0</span></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="alert alert-success">
+                            <strong>Total Geral Iniciados: <span id="totalGeralIniciados">0</span></strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-primary">
+                            <strong>Total Geral Concluídos: <span id="totalGeralConcluidos">0</span></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function excluirHistorico(historicoId, numeroCiclo) {
+    document.getElementById('cicloExcluir').textContent = `Ciclo ${numeroCiclo}`;
+    document.getElementById('formExcluir').action = `{% url 'contact:excluir_historico' 0 %}`.replace('0', historicoId);
+    new bootstrap.Modal(document.getElementById('modalConfirmacao')).show();
+}
+
+function mostrarDetalhes(historicoId, numeroCiclo) {
+    console.log(`Buscando detalhes para histórico ${historicoId}`);
+    
+    // Construir URL usando o namespace Django
+    const url = `{% url 'contact:detalhes_historico' 0 %}`.replace('0', historicoId);
+    console.log('URL construída:', url);
+    
+    // Fazer requisição AJAX para buscar detalhes dos livros
+    fetch(url)
+        .then(response => {
+            console.log('Resposta recebida:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Dados recebidos:', data);
+            
+            // Preencher modal
+            document.getElementById('cicloDetalhes').textContent = `Ciclo ${numeroCiclo}`;
+            
+            // Limpar dados anteriores
+            ['Sequencia', 'Abc', 'PreJovens', 'Outros'].forEach(categoria => {
+                const iniciadosEl = document.getElementById(`livros${categoria}Iniciados`);
+                const concluidosEl = document.getElementById(`livros${categoria}Concluidos`);
+                const totalIniciadosEl = document.getElementById(`total${categoria}Iniciados`);
+                const totalConcluidosEl = document.getElementById(`total${categoria}Concluidos`);
+                
+                if (iniciadosEl) iniciadosEl.innerHTML = '';
+                if (concluidosEl) concluidosEl.innerHTML = '';
+                if (totalIniciadosEl) totalIniciadosEl.textContent = '0';
+                if (totalConcluidosEl) totalConcluidosEl.textContent = '0';
+            });
+            
+            let totalGeralIniciados = 0;
+            let totalGeralConcluidos = 0;
+            
+            // Processar dados por categoria
+            data.livros_detalhes.forEach(livro => {
+                // Mapear categoria para nomes do template
+                const categoriaMap = {
+                    'sequencia': 'Sequencia',
+                    'abc': 'Abc',
+                    'prejovens': 'PreJovens',
+                    'outros': 'Outros'
+                };
+                const categoriaTemplate = categoriaMap[livro.categoria] || livro.categoria;
+                
+                // Adicionar livro à lista de iniciados se > 0
+                if (livro.quantidade_iniciados > 0) {
+                    const div = document.getElementById(`livros${categoriaTemplate}Iniciados`);
+                    div.innerHTML += `<div class="mb-1">• ${livro.nome_livro}: <strong>${livro.quantidade_iniciados}</strong> ${livro.observacoes ? `<small class="text-muted">(${livro.observacoes})</small>` : ''}</div>`;
+                }
+                
+                // Adicionar livro à lista de concluídos se > 0
+                if (livro.quantidade_concluidos > 0) {
+                    const div = document.getElementById(`livros${categoriaTemplate}Concluidos`);
+                    div.innerHTML += `<div class="mb-1">• ${livro.nome_livro}: <strong>${livro.quantidade_concluidos}</strong> ${livro.observacoes ? `<small class="text-muted">(${livro.observacoes})</small>` : ''}</div>`;
+                }
+                
+                totalGeralIniciados += livro.quantidade_iniciados;
+                totalGeralConcluidos += livro.quantidade_concluidos;
+            });
+            
+            // Atualizar totais por categoria usando os dados do histórico
+            document.getElementById('totalSequenciaIniciados').textContent = data.historico.livros_sequencia_iniciados;
+            document.getElementById('totalSequenciaConcluidos').textContent = data.historico.livros_sequencia_concluidos;
+            document.getElementById('totalAbcIniciados').textContent = data.historico.livros_abc_iniciados;
+            document.getElementById('totalAbcConcluidos').textContent = data.historico.livros_abc_concluidos;
+            document.getElementById('totalPreJovensIniciados').textContent = data.historico.livros_prejovens_iniciados;
+            document.getElementById('totalPreJovensConcluidos').textContent = data.historico.livros_prejovens_concluidos;
+            document.getElementById('totalOutrosIniciados').textContent = data.historico.livros_outros_iniciados;
+            document.getElementById('totalOutrosConcluidos').textContent = data.historico.livros_outros_concluidos;
+            
+            // Totais gerais
+            document.getElementById('totalGeralIniciados').textContent = data.historico.livros_iniciados;
+            document.getElementById('totalGeralConcluidos').textContent = data.historico.livros_concluidos;
+            
+            // Mostrar modal
+            new bootstrap.Modal(document.getElementById('modalDetalhes')).show();
+        })
+        .catch(error => {
+            console.error('Erro detalhado:', error);
+            alert(`Erro ao carregar detalhes do histórico: ${error.message}`);
+        });
+}
+
+function criarCicloCustom() {
+    const numero = document.getElementById('numeroCicloCustom').value;
+    if (numero && numero > 0 && numero < {{ ciclo_atual.numero }}) {
+        window.location.href = `{% url 'contact:criar_historico' 0 %}`.replace('0', numero);
+    } else {
+        alert('Por favor, insira um número de ciclo válido.');
+    }
+}
+</script>
+{% endblock %}

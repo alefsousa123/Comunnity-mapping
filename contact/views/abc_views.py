@@ -1,8 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from contact.models import AulaCrianca
 from contact.forms import AulaCriancaForm
+from contact.mixins import HistoricoAutomaticoMixin
+
+
+class ABCHistoricoMixin(HistoricoAutomaticoMixin):
+    """Mixin específico para views de aulas de criança"""
+    pass
 
 @login_required(login_url="contact:login")
 def abc_list(request):
@@ -27,6 +34,8 @@ def abc_detail(request, pk):
 
 @login_required(login_url="contact:login")
 def abc_create(request):
+    historico_mixin = ABCHistoricoMixin()
+    
     if request.method == "POST":
         form = AulaCriancaForm(request.POST, user=request.user)
         if form.is_valid():
@@ -34,6 +43,21 @@ def abc_create(request):
             abc.owner = request.user
             abc.save()
             form.save_m2m()
+            
+            # Verificar se deve salvar no histórico
+            ciclo_selecionado = form.cleaned_data.get('numero_ciclo_criacao')
+            historico = historico_mixin.salvar_no_historico_se_necessario(
+                abc, ciclo_selecionado
+            )
+            
+            if historico:
+                messages.success(
+                    request,
+                    f'Aula "{abc.nome}" criada e adicionada ao histórico do ciclo {ciclo_selecionado}!'
+                )
+            else:
+                messages.success(request, f'Aula "{abc.nome}" criada com sucesso!')
+            
             return redirect("contact:aulacrianca_detail", abc.id)
     else:
         form = AulaCriancaForm(user=request.user)

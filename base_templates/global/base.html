@@ -11,5 +11,9 @@
         {% block content %}{% endblock content %}
         {% include "global/partials/_pagination.html" %}
     </main>
+    
+    <!-- Script para seleção dinâmica de ciclos -->
+    {% load static %}
+    <script src="{% static 'global/js/cycle-selector.js' %}"></script>
 </body>
 </html>

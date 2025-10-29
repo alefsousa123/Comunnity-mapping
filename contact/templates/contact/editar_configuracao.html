@@ -1,0 +1,340 @@
+{% extends 'global/base.html' %}
+
+{% block title %}Configurações de Estatísticas{% endblock %}
+
+{% block content %}
+<style>
+    .config-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .config-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .config-header {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        color: white;
+        border-radius: 20px 20px 0 0;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .form-section {
+        background: linear-gradient(145deg, #f8f9fa, #ffffff);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .form-section:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: #007bff;
+    }
+    
+    .section-title {
+        color: #007bff;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-control {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.8);
+    }
+    
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        background: white;
+    }
+    
+    .cycle-preview {
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .cycle-card {
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        margin-bottom: 1rem;
+        padding: 1rem;
+    }
+    
+    .cycle-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .cycle-current { border-color: #28a745; background: linear-gradient(135deg, #d4edda, #f0f8f4); }
+    .cycle-future { border-color: #007bff; background: linear-gradient(135deg, #cce5ff, #e6f3ff); }
+    .cycle-past { border-color: #6c757d; background: linear-gradient(135deg, #e9ecef, #f8f9fa); }
+    
+    .btn-gradient {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        border: none;
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+        color: white;
+    }
+    
+    .btn-danger-custom {
+        background: linear-gradient(45deg, #dc3545, #c82333);
+        border: none;
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-danger-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+        color: white;
+    }
+    
+    .alert-cycle {
+        border-radius: 15px;
+        border: none;
+        padding: 1.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .progress-circular {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: conic-gradient(#28a745 calc(var(--progress) * 1%), #e9ecef 0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    
+    .progress-circular::before {
+        content: '';
+        position: absolute;
+        width: 70px;
+        height: 70px;
+        background: white;
+        border-radius: 50%;
+    }
+    
+    .progress-text {
+        position: relative;
+        z-index: 1;
+        font-weight: bold;
+        color: #333;
+    }
+</style>
+
+<div class="config-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-10">
+                <div class="config-card">
+                    <div class="config-header">
+                        <h1 class="mb-2">⚙️ Configurações do Plano</h1>
+                        <p class="mb-0 lead">Configure seu plano de crescimento e ciclos automáticos</p>
+                        <div class="mt-3">
+                            <a href="{% url 'contact:dashboard_estatisticas' %}" class="btn btn-light btn-lg">
+                                <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4">
+                        <!-- Informações do Ciclo Atual -->
+                        {% if ciclo_atual.numero %}
+                        <div class="alert alert-success alert-cycle mb-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-2 text-center">
+                                    <div class="progress-circular" style="--progress: {{ ciclo_atual.progresso }}">
+                                        <div class="progress-text">{{ ciclo_atual.numero }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-10">
+                                    <h5 class="mb-2">🎯 {{ ciclo_atual.nome }} - Em Andamento</h5>
+                                    <p class="mb-1"><strong>Período:</strong> {{ ciclo_atual.inicio|date:"d/m/Y" }} até {{ ciclo_atual.fim|date:"d/m/Y" }}</p>
+                                    <p class="mb-0"><strong>Progresso:</strong> {{ ciclo_atual.progresso|floatformat:1 }}% • {{ ciclo_atual.dias_restantes }} dias restantes</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning alert-cycle mb-4">
+                            <h5><i class="fas fa-exclamation-triangle"></i> {{ ciclo_atual.nome }}</h5>
+                            <p class="mb-0">Configure um novo plano para começar a contar os ciclos automaticamente.</p>
+                        </div>
+                        {% endif %}
+                        
+                        <form method="post" id="configForm">
+                            {% csrf_token %}
+                        
+                            <!-- Configurações Gerais -->
+                            <div class="form-section">
+                                <h6 class="section-title">
+                                    <i class="fas fa-cogs"></i> Configurações Gerais
+                                </h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="titulo_plano" class="form-label fw-bold">Título do Plano</label>
+                                        <input type="text" class="form-control form-control-lg" id="titulo_plano" name="titulo_plano" 
+                                               value="{{ configuracao.titulo_plano }}" required>
+                                        <div class="form-text">Ex: Plano de 9 Anos, Plano de 5 Anos, etc.</div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="data_inicio_plano" class="form-label fw-bold">Data de Início do Plano</label>
+                                        <input type="date" class="form-control form-control-lg" id="data_inicio_plano" name="data_inicio_plano" 
+                                               value="{{ configuracao.data_inicio_plano|date:'Y-m-d' }}" required>
+                                        <div class="form-text">Data do primeiro ciclo do plano.</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="duracao_ciclo_meses" class="form-label fw-bold">Duração do Ciclo (meses)</label>
+                                        <select class="form-control form-control-lg" id="duracao_ciclo_meses" name="duracao_ciclo_meses">
+                                            <option value="3" {% if configuracao.duracao_ciclo_meses == 3 %}selected{% endif %}>3 meses</option>
+                                            <option value="4" {% if configuracao.duracao_ciclo_meses == 4 %}selected{% endif %}>4 meses</option>
+                                            <option value="6" {% if configuracao.duracao_ciclo_meses == 6 %}selected{% endif %}>6 meses</option>
+                                            <option value="12" {% if configuracao.duracao_ciclo_meses == 12 %}selected{% endif %}>12 meses</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label for="total_ciclos_plano" class="form-label fw-bold">Total de Ciclos no Plano</label>
+                                        <input type="number" class="form-control form-control-lg" id="total_ciclos_plano" name="total_ciclos_plano" 
+                                               value="{{ configuracao.total_ciclos_plano }}" min="1" max="100" required>
+                                        <div class="form-text">Ex: 36 ciclos para um plano de 9 anos com ciclos de 3 meses.</div>
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-bold">Status do Plano</label>
+                                        <div class="form-check form-switch" style="margin-top: 0.5rem;">
+                                            <input class="form-check-input" type="checkbox" id="ativo" name="ativo" 
+                                                   {% if configuracao.ativo %}checked{% endif %}>
+                                            <label class="form-check-label" for="ativo">
+                                                <span id="status-text">{% if configuracao.ativo %}Plano Ativo{% else %}Plano Encerrado{% endif %}</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Preview dos Ciclos -->
+                            {% if ciclos_preview %}
+                            <div class="cycle-preview">
+                                <h6 class="section-title">
+                                    <i class="fas fa-calendar-alt"></i> Preview dos Próximos Ciclos
+                                </h6>
+                                
+                                <div class="row">
+                                    {% for ciclo in ciclos_preview %}
+                                    <div class="col-md-6 col-lg-4 mb-3">
+                                        <div class="cycle-card 
+                                            {% if ciclo_atual.numero == ciclo.numero %}cycle-current
+                                            {% elif ciclo.numero > ciclo_atual.numero %}cycle-future
+                                            {% else %}cycle-past{% endif %}">
+                                            <div class="text-center">
+                                                <h6 class="mb-2">
+                                                    {% if ciclo_atual.numero == ciclo.numero %}🎯 
+                                                    {% elif ciclo.numero > ciclo_atual.numero %}📅 
+                                                    {% else %}✅ {% endif %}
+                                                    Ciclo {{ ciclo.numero }}
+                                                </h6>
+                                                <small class="fw-bold">
+                                                    {{ ciclo.inicio|date:"d/m/Y" }} a {{ ciclo.fim|date:"d/m/Y" }}
+                                                </small>
+                                                {% if ciclo_atual.numero == ciclo.numero %}
+                                                <div class="mt-2">
+                                                    <span class="badge bg-success">Atual</span>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% if forloop.counter == 12 %}
+                                        <div class="col-12 text-center">
+                                            <small class="text-muted">... e mais {{ configuracao.total_ciclos_plano|add:"-12" }} ciclos</small>
+                                        </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Botões -->
+                            <div class="text-center mt-4">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <a href="{% url 'contact:dashboard_estatisticas' %}" class="btn btn-outline-secondary btn-lg w-100">
+                                            <i class="fas fa-times"></i> Cancelar
+                                        </a>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <button type="submit" name="action" value="save" class="btn-gradient btn-lg w-100">
+                                            <i class="fas fa-save"></i> Salvar Configurações
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        {% if configuracao.ativo %}
+                                        <button type="submit" name="action" value="encerrar" class="btn-danger-custom btn-lg w-100"
+                                                onclick="return confirm('Tem certeza que deseja encerrar este plano?')">
+                                            <i class="fas fa-stop"></i> Encerrar Plano
+                                        </button>
+                                        {% else %}
+                                        <button type="submit" name="action" value="reiniciar" class="btn-gradient btn-lg w-100">
+                                            <i class="fas fa-play"></i> Reiniciar Plano
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ativoCheckbox = document.getElementById('ativo');
+    const statusText = document.getElementById('status-text');
+    
+    ativoCheckbox.addEventListener('change', function() {
+        statusText.textContent = this.checked ? 'Plano Ativo' : 'Plano Encerrado';
+    });
+});
+</script>
+{% endblock %}

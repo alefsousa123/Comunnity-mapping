@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste de Formulário</title>
+    <script>
+        function adicionarLivro(categoria) {
+            const categoriaMap = {
+                'Sequência': 'sequencia',
+                'ABC': 'abc',
+                'Pré-jovens': 'prejovens',
+                'Outros': 'outros'
+            };
+            
+            const categoriaBackend = categoriaMap[categoria];
+            const contador = 1;
+            
+            console.log(`Categoria: ${categoria} -> ${categoriaBackend}`);
+            console.log(`Campo seria: livro_${categoriaBackend}_${contador}_nome`);
+            
+            // Criar campo de teste
+            const form = document.getElementById('testForm');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = `livro_${categoriaBackend}_${contador}_nome`;
+            input.value = `Teste ${categoria}`;
+            input.placeholder = `livro_${categoriaBackend}_${contador}_nome`;
+            form.appendChild(input);
+            
+            const br = document.createElement('br');
+            form.appendChild(br);
+        }
+        
+        function mostrarCampos() {
+            const form = document.getElementById('testForm');
+            const formData = new FormData(form);
+            console.log('Campos no formulário:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`  ${key}: "${value}"`);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Teste de Mapeamento de Categorias</h1>
+    
+    <button onclick="adicionarLivro('Sequência')">Adicionar Sequência</button>
+    <button onclick="adicionarLivro('ABC')">Adicionar ABC</button>
+    <button onclick="adicionarLivro('Pré-jovens')">Adicionar Pré-jovens</button>
+    <button onclick="adicionarLivro('Outros')">Adicionar Outros</button>
+    
+    <br><br>
+    
+    <form id="testForm">
+        <h3>Campos gerados:</h3>
+    </form>
+    
+    <br>
+    <button onclick="mostrarCampos()">Mostrar Campos no Console</button>
+</body>
+</html>

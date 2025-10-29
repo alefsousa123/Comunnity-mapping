@@ -2,30 +2,50 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from contact.models import Rua, GrupoFamilias
 from contact.forms import RuaForm
 
 @login_required(login_url="contact:login")
 def rua_create(request):
     site_title = "Criar Rua"
+    
+    # Verificar se viemos do formulário de família
+    redirect_to_familia = request.GET.get('redirect_to_familia') == 'true'
+    
     if request.method == "POST":
         form = RuaForm(request.POST)
         if form.is_valid():
             rua = form.save(commit=False)
             rua.owner = request.user
             rua.save()
+            
+            # Se viemos do formulário de família, redirecionar de volta
+            if redirect_to_familia:
+                return redirect(f"{reverse('contact:familia_create')}?new_rua_id={rua.id}")
+            
             return redirect("contact:ruas_list")
         return render(
             request,
             "contact/partials/_rua-form.html",
-            {"form": form, "site_title": site_title, "form_title": site_title}
+            {
+                "form": form, 
+                "site_title": site_title, 
+                "form_title": site_title,
+                "redirect_to_familia": redirect_to_familia
+            }
         )
     else:
         form = RuaForm()
     return render(
         request,
         "contact/partials/_rua-form.html",
-        {"form": form, "site_title": site_title, "form_title": site_title}
+        {
+            "form": form, 
+            "site_title": site_title, 
+            "form_title": site_title,
+            "redirect_to_familia": redirect_to_familia
+        }
     )
 
 @login_required(login_url="contact:login")

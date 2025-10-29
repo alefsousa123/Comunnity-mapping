@@ -1,0 +1,289 @@
+{% extends "global/base.html" %}
+
+{% block title %}Histórico de Ciclos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="header-gradient p-4 rounded mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2 text-white">📈 Histórico de Ciclos</h1>
+                <p class="mb-0 lead text-white-50">Acompanhe o crescimento das atividades ao longo dos ciclos</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'contact:dashboard_estatisticas' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo de Crescimento Total -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="activity-icon text-primary">📊</div>
+                    <h3 class="stats-number">{{ crescimento_total.atividades|floatformat:1 }}%</h3>
+                    <p class="mb-0">Crescimento Médio - Atividades</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="activity-icon text-success">👥</div>
+                    <h3 class="stats-number">{{ crescimento_total.participantes|floatformat:1 }}%</h3>
+                    <p class="mb-0">Crescimento Médio - Participantes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <div class="activity-icon text-info">📚</div>
+                    <h3 class="stats-number">{{ crescimento_total.livros|floatformat:1 }}%</h3>
+                    <p class="mb-0">Crescimento Médio - Livros</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ciclo Atual -->
+    {% if ciclo_atual %}
+    <div class="card mb-4 border-primary">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-clock"></i> {{ ciclo_atual.nome }} (Atual)
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <small class="text-muted">Data Início:</small>
+                    <p class="mb-1"><strong>{{ ciclo_atual.inicio|date:"d/m/Y" }}</strong></p>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">Data Fim:</small>
+                    <p class="mb-1"><strong>{{ ciclo_atual.fim|date:"d/m/Y" }}</strong></p>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">Progresso:</small>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar" role="progressbar" style="width: {{ ciclo_atual.progresso }}%">
+                            {{ ciclo_atual.progresso|floatformat:0 }}%
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">Dias Restantes:</small>
+                    <p class="mb-1"><strong>{{ ciclo_atual.dias_restantes }} dias</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Histórico de Ciclos -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-history"></i> Histórico dos Últimos Ciclos
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if ciclos_historicos %}
+                <div class="row">
+                    {% for ciclo in ciclos_historicos %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-secondary">
+                            <div class="card-header bg-secondary text-white">
+                                <h6 class="mb-0">Ciclo {{ ciclo.numero_ciclo }}</h6>
+                                <small>{{ ciclo.data_inicio|date:"d/m/Y" }} - {{ ciclo.data_fim|date:"d/m/Y" }}</small>
+                            </div>
+                            <div class="card-body">
+                                <!-- Atividades -->
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted">Total de Atividades:</small>
+                                        <p class="mb-1"><strong>{{ ciclo.total_atividades }}</strong></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Crescimento:</small>
+                                        <p class="mb-1">
+                                            {% if ciclo.crescimento_atividades > 0 %}
+                                                <span class="text-success">
+                                                    <i class="fas fa-arrow-up"></i> +{{ ciclo.crescimento_atividades|floatformat:1 }}%
+                                                </span>
+                                            {% elif ciclo.crescimento_atividades < 0 %}
+                                                <span class="text-danger">
+                                                    <i class="fas fa-arrow-down"></i> {{ ciclo.crescimento_atividades|floatformat:1 }}%
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">
+                                                    <i class="fas fa-minus"></i> 0%
+                                                </span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Participantes -->
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted">Total de Participantes:</small>
+                                        <p class="mb-1"><strong>{{ ciclo.total_participantes }}</strong></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Crescimento:</small>
+                                        <p class="mb-1">
+                                            {% if ciclo.crescimento_participantes > 0 %}
+                                                <span class="text-success">
+                                                    <i class="fas fa-arrow-up"></i> +{{ ciclo.crescimento_participantes|floatformat:1 }}%
+                                                </span>
+                                            {% elif ciclo.crescimento_participantes < 0 %}
+                                                <span class="text-danger">
+                                                    <i class="fas fa-arrow-down"></i> {{ ciclo.crescimento_participantes|floatformat:1 }}%
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">
+                                                    <i class="fas fa-minus"></i> 0%
+                                                </span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Livros -->
+                                <div class="row mb-3">
+                                    <div class="col-4">
+                                        <small class="text-muted">Livros:</small>
+                                        <p class="mb-1"><strong>{{ ciclo.total_livros }}</strong></p>
+                                    </div>
+                                    <div class="col-4">
+                                        <small class="text-muted">Iniciados:</small>
+                                        <p class="mb-1"><strong>{{ ciclo.livros_iniciados }}</strong></p>
+                                    </div>
+                                    <div class="col-4">
+                                        <small class="text-muted">Concluídos:</small>
+                                        <p class="mb-1"><strong>{{ ciclo.livros_concluidos }}</strong></p>
+                                    </div>
+                                </div>
+
+                                <!-- Detalhes dos Livros por Categoria -->
+                                {% if ciclo.livros_detalhados %}
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <small class="text-muted">📚 Livros por Categoria:</small>
+                                        <div class="mt-2">
+                                            {% regroup ciclo.livros_detalhados by categoria as livros_por_categoria %}
+                                            {% for categoria in livros_por_categoria %}
+                                                {% if categoria.list %}
+                                                <div class="mb-2">
+                                                    <strong class="text-primary" style="font-size: 0.85rem;">
+                                                        {% if categoria.grouper == 'sequencia' %}📖 Sequência (Ruhi):
+                                                        {% elif categoria.grouper == 'abc' %}👶 ABC (Crianças):
+                                                        {% elif categoria.grouper == 'prejovens' %}🎯 Pré-jovens:
+                                                        {% else %}📚 Outros:
+                                                        {% endif %}
+                                                    </strong>
+                                                    <div class="ms-2" style="font-size: 0.75rem;">
+                                                        {% for livro in categoria.list %}
+                                                            <span class="badge bg-light text-dark me-1 mb-1">
+                                                                {{ livro.nome_livro }}: 
+                                                                <span class="text-primary">{{ livro.quantidade_iniciados }}i</span>
+                                                                {% if livro.quantidade_concluidos > 0 %}
+                                                                    / <span class="text-success">{{ livro.quantidade_concluidos }}c</span>
+                                                                {% endif %}
+                                                            </span>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Detalhes das Atividades -->
+                                <hr>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <small class="text-muted">Detalhamento:</small>
+                                        <div class="row mt-2">
+                                            <div class="col-6">
+                                                <small>🔄 Círculos: {{ ciclo.total_circulos_estudo }}</small><br>
+                                                <small>👦 Pré-jovens: {{ ciclo.total_grupos_prejovens }}</small><br>
+                                                <small>👧 Crianças: {{ ciclo.total_aulas_criancas }}</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <small>🙏 Devocionais: {{ ciclo.total_reunioes_devocionais }}</small><br>
+                                                <small>👨‍👩‍👧‍👦 Famílias: {{ ciclo.total_grupos_familias }}</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Botão para ver detalhes completos -->
+                                        <div class="text-center mt-3">
+                                            <a href="{% url 'contact:historico_ciclo_detalhado' ciclo.numero_ciclo %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> Ver Detalhes Completos
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="activity-icon text-muted">📊</div>
+                    <h5 class="text-muted">Nenhum histórico disponível</h5>
+                    <p class="text-muted">Os dados históricos serão registrados automaticamente ao final de cada ciclo.</p>
+                    <a href="{% url 'contact:editar_configuracao' %}" class="btn btn-primary">
+                        <i class="fas fa-cog"></i> Configurar Ciclos
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .stats-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .activity-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .header-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+    }
+</style>
+{% endblock %}

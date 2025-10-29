@@ -1,0 +1,159 @@
+{% extends 'global/base.html' %}
+{% load i18n %}
+
+{% block title %}Editar Categoria{% endblock title %}
+
+{% block content %}
+<div class="main-content container">
+    <div class="main-content-header">
+        <h2>
+            <i class="fas fa-edit"></i>
+            Editar Categoria: {{ categoria.nome }}
+        </h2>
+        <div class="actions">
+            <a href="{% url 'contact:livro_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content-form">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.nome.id_for_label }}" class="form-label">
+                            Nome da Categoria *
+                        </label>
+                        {{ form.nome }}
+                        {% if form.nome.errors %}
+                            <div class="text-danger">
+                                {{ form.nome.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="{{ form.cor.id_for_label }}" class="form-label">
+                            Cor
+                        </label>
+                        {{ form.cor }}
+                        {% if form.cor.errors %}
+                            <div class="text-danger">
+                                {{ form.cor.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="{{ form.ordem.id_for_label }}" class="form-label">
+                            Ordem
+                        </label>
+                        {{ form.ordem }}
+                        {% if form.ordem.errors %}
+                            <div class="text-danger">
+                                {{ form.ordem.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.descricao.id_for_label }}" class="form-label">
+                    Descrição
+                </label>
+                {{ form.descricao }}
+                {% if form.descricao.errors %}
+                    <div class="text-danger">
+                        {{ form.descricao.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    {{ form.ativo }}
+                    <label class="form-check-label" for="{{ form.ativo.id_for_label }}">
+                        Categoria ativa
+                    </label>
+                </div>
+                {% if form.ativo.errors %}
+                    <div class="text-danger">
+                        {{ form.ativo.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if categoria.total_livros > 0 %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Esta categoria possui <strong>{{ categoria.total_livros }}</strong> livro(s) associado(s).
+                </div>
+            {% endif %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Atualizar Categoria
+                </button>
+                <a href="{% url 'contact:livro_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                {% if categoria.total_livros == 0 %}
+                    <a href="{% url 'contact:categoria_delete' categoria.pk %}" 
+                       class="btn btn-danger"
+                       onclick="return confirm('Tem certeza que deseja excluir esta categoria? Esta ação não pode ser desfeita.')">
+                        <i class="fas fa-trash"></i>
+                        Excluir Categoria
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.form-actions .btn {
+    margin-right: 0.5rem;
+}
+
+input[type="color"] {
+    width: 50px;
+    height: 38px;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+    font-size: 0.875em;
+    margin-top: 0.25rem;
+}
+</style>
+{% endblock content %}

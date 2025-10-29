@@ -1,0 +1,922 @@
+{% extends 'global/base.html' %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<style>
+    .stats-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stats-primary { color: #007bff !important; }
+    .stats-success { color: #28a745 !important; }
+    .stats-info { color: #17a2b8 !important; }
+    .stats-warning { color: #ffc107 !important; }
+    
+    .cycle-badge {
+        background: linear-gradient(45deg, #6c757d, #495057);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+    
+    .detail-card {
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .detail-card:hover {
+        border-color: #6c757d;
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.15);
+    }
+    
+    .activity-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .progress-ring {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .header-gradient {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .historical-badge {
+        background: linear-gradient(45deg, #6c757d, #495057);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .growth-indicator {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .growth-positive { color: #28a745; }
+    .growth-negative { color: #dc3545; }
+    .growth-neutral { color: #6c757d; }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Header para Histórico -->
+    <div class="header-gradient">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="historical-badge me-3">📚 HISTÓRICO</span>
+                    <h1 class="mb-0">{{ titulo_pagina }}</h1>
+                </div>
+                <p class="mb-0 lead">Dados completos registrados no final deste ciclo</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'contact:historico_ciclos' %}" 
+                   class="btn btn-light me-2">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Histórico
+                </a>
+                <a href="{% url 'contact:dashboard_estatisticas' %}" 
+                   class="btn btn-outline-light">
+                    <i class="fas fa-chart-line"></i> Dashboard Atual
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações do Ciclo Histórico -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="detail-card card">
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="cycle-badge">
+                            {{ configuracao.titulo_plano }} - {{ ciclo_atual.nome }} (Finalizado)
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="progress-ring" style="background: linear-gradient(45deg, #28a745, #20c997);">
+                                📅
+                            </div>
+                            <strong>Período:</strong><br>
+                            <span class="text-muted">{{ ciclo_atual.inicio|date:"d/m/Y" }} até {{ ciclo_atual.fim|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="progress-ring" style="background: linear-gradient(45deg, #007bff, #0056b3);">
+                                ⏱️
+                            </div>
+                            <strong>Duração:</strong><br>
+                            <span class="text-muted">{{ ciclo_atual.dias_duracao }} dias</span>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="progress-ring" style="background: linear-gradient(45deg, #ffc107, #fd7e14);">
+                                📊
+                            </div>
+                            <strong>Status:</strong><br>
+                            <span class="text-success fw-bold">✅ Concluído</span>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="progress-ring" style="background: linear-gradient(45deg, #17a2b8, #138496);">
+                                📈
+                            </div>
+                            <strong>Data de Registro:</strong><br>
+                            <span class="text-muted">{{ historico.data_registro|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo de Crescimento do Ciclo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="detail-card card">
+                <div class="card-header" style="background: linear-gradient(90deg, #6c757d, #495057); color: white; border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0">📈 Crescimento Registrado no Ciclo</h5>
+                    <small class="opacity-75">Crescimento em relação ao ciclo anterior</small>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="progress-ring" style="background: linear-gradient(45deg, #007bff, #0056b3);">
+                                📊
+                            </div>
+                            <h4 class="growth-indicator {% if historico.crescimento_atividades > 0 %}growth-positive{% elif historico.crescimento_atividades < 0 %}growth-negative{% else %}growth-neutral{% endif %}">
+                                {% if historico.crescimento_atividades > 0 %}+{% endif %}{{ historico.crescimento_atividades|floatformat:1 }}%
+                            </h4>
+                            <p class="mb-0">Crescimento - Atividades</p>
+                            <small class="text-muted">Em relação ao ciclo anterior</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="progress-ring" style="background: linear-gradient(45deg, #28a745, #20c997);">
+                                👥
+                            </div>
+                            <h4 class="growth-indicator {% if historico.crescimento_participantes > 0 %}growth-positive{% elif historico.crescimento_participantes < 0 %}growth-negative{% else %}growth-neutral{% endif %}">
+                                {% if historico.crescimento_participantes > 0 %}+{% endif %}{{ historico.crescimento_participantes|floatformat:1 }}%
+                            </h4>
+                            <p class="mb-0">Crescimento - Participantes</p>
+                            <small class="text-muted">Em relação ao ciclo anterior</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="progress-ring" style="background: linear-gradient(45deg, #17a2b8, #138496);">
+                                📚
+                            </div>
+                            <h4 class="growth-indicator {% if historico.crescimento_livros > 0 %}growth-positive{% elif historico.crescimento_livros < 0 %}growth-negative{% else %}growth-neutral{% endif %}">
+                                {% if historico.crescimento_livros > 0 %}+{% endif %}{{ historico.crescimento_livros|floatformat:1 }}%
+                            </h4>
+                            <p class="mb-0">Crescimento - Livros</p>
+                            <small class="text-muted">Em relação ao ciclo anterior</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Atividades do Ciclo Histórico -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="detail-card card">
+                <div class="card-header" style="background: linear-gradient(90deg, #fd7e14, #dc3545); color: white; border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0">📊 Dados Registrados do Ciclo {{ atividades_novas_ciclo.numero_ciclo }}</h5>
+                    <small class="opacity-75">De {{ atividades_novas_ciclo.data_inicio_ciclo|date:"d/m/Y" }} até {{ atividades_novas_ciclo.data_fim_ciclo|date:"d/m/Y" }}</small>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="progress-ring" style="background: linear-gradient(45deg, #dc3545, #c82333);">
+                                📚
+                            </div>
+                            <h4 class="stats-number">{{ atividades_novas_ciclo.livros_novos }}</h4>
+                            <p class="mb-0">Livros Iniciados</p>
+                            <small class="text-muted">Estudos registrados</small>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="progress-ring" style="background: linear-gradient(45deg, #28a745, #20c997);">
+                                ✅
+                            </div>
+                            <h4 class="stats-number">{{ atividades_novas_ciclo.livros_concluidos_ciclo }}</h4>
+                            <p class="mb-0">Livros Concluídos</p>
+                            <small class="text-muted">Estudos finalizados</small>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="progress-ring" style="background: linear-gradient(45deg, #fd7e14, #e55a24);">
+                                🎯
+                            </div>
+                            <h4 class="stats-number">{{ atividades_novas_ciclo.total_atividades_novas }}</h4>
+                            <p class="mb-0">Total de Atividades</p>
+                            <small class="text-muted">Atividades registradas</small>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="progress-ring" style="background: linear-gradient(45deg, #6f42c1, #5a2a8a);">
+                                📈
+                            </div>
+                            <h4 class="stats-number">{{ atividades_novas_ciclo.taxa_conclusao|floatformat:0 }}%</h4>
+                            <p class="mb-0">Taxa de Conclusão</p>
+                            <small class="text-muted">Concluídos / Iniciados</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Detalhamento por tipo de atividade -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">Detalhamento de Atividades Registradas</h6>
+                            <div class="row">
+                                <div class="col-md-3 col-sm-6 mb-2">
+                                    <div class="bg-light p-3 rounded">
+                                        <i class="fas fa-users text-primary me-2"></i>
+                                        <strong>{{ atividades_novas_ciclo.grupos_prejovens_novos }}</strong> Grupos de Pré-jovens
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-sm-6 mb-2">
+                                    <div class="bg-light p-3 rounded">
+                                        <i class="fas fa-child text-success me-2"></i>
+                                        <strong>{{ atividades_novas_ciclo.aulas_criancas_novas }}</strong> Aulas de Crianças
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-sm-6 mb-2">
+                                    <div class="bg-light p-3 rounded">
+                                        <i class="fas fa-book text-info me-2"></i>
+                                        <strong>{{ atividades_novas_ciclo.circulos_estudo_novos }}</strong> Círculos de Estudo
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-sm-6 mb-2">
+                                    <div class="bg-light p-3 rounded">
+                                        <i class="fas fa-pray text-warning me-2"></i>
+                                        <strong>{{ atividades_novas_ciclo.reunioes_devocionais_novas }}</strong> Reuniões Devocionais
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Livros por Categoria no Ciclo -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <h6 class="text-success mb-3">📚 Livros Iniciados por Categoria</h6>
+                                {% if atividades_novas_ciclo.livros_iniciados_por_categoria %}
+                                    {% for categoria, dados in atividades_novas_ciclo.livros_iniciados_por_categoria.items %}
+                                    <div class="mb-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="badge me-3" style="background-color: {{ dados.cor }}; min-width: 15px; height: 15px; border-radius: 50%;"></div>
+                                            <span class="fw-bold me-2">{{ dados.count }}</span>
+                                            <span class="fw-bold">{{ categoria }}</span>
+                                        </div>
+                                        <div class="ms-4">
+                                            {% for livro, quantidade in dados.livros.items %}
+                                                <div class="d-inline-flex align-items-center bg-light rounded p-2 me-2 mb-2" style="border: 1px solid #dee2e6;">
+                                                    <span class="text-dark me-2">{{ livro }}</span>
+                                                    <span class="badge bg-primary rounded-pill" style="font-size: 0.75rem;">{{ quantidade }}</span>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-muted">Nenhum livro iniciado registrado para este ciclo</p>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3">✅ Livros Concluídos por Categoria</h6>
+                                {% if atividades_novas_ciclo.livros_concluidos_por_categoria %}
+                                    {% for categoria, dados in atividades_novas_ciclo.livros_concluidos_por_categoria.items %}
+                                    <div class="mb-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="badge me-3" style="background-color: {{ dados.cor }}; min-width: 15px; height: 15px; border-radius: 50%;"></div>
+                                            <span class="fw-bold me-2">{{ dados.count }}</span>
+                                            <span class="fw-bold">{{ categoria }}</span>
+                                        </div>
+                                        <div class="ms-4">
+                                            {% for livro, quantidade in dados.livros.items %}
+                                                <div class="d-inline-flex align-items-center bg-light rounded p-2 me-2 mb-2" style="border: 1px solid #dee2e6;">
+                                                    <span class="text-dark me-2">{{ livro }}</span>
+                                                    <span class="badge bg-success rounded-pill" style="font-size: 0.75rem;">{{ quantidade }}</span>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-muted">Nenhum livro concluído registrado para este ciclo</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalhamento das Atividades Registradas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="detail-card card">
+                <div class="card-header" style="background: linear-gradient(90deg, #28a745, #20c997); color: white; border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0">🏛️ Atividades Registradas no Final do Ciclo</h5>
+                    <small class="opacity-75">Dados das atividades conforme registrado ao encerrar o ciclo</small>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <!-- Grupos de Pré-jovens -->
+                        <div class="col-md-6 col-lg-3">
+                            <div class="activity-edit-card p-3 border rounded-3 h-100" style="background: linear-gradient(145deg, #e3f2fd, #f8f9fa); border-color: #2196f3 !important;">
+                                <div class="text-center mb-3">
+                                    <div class="activity-icon stats-primary mb-2">👥</div>
+                                    <h6 class="fw-bold text-primary mb-0">Grupos de Pré-jovens</h6>
+                                </div>
+                                <div class="text-center">
+                                    <div class="mb-2">
+                                        <span class="form-label small fw-semibold">Total de Grupos:</span>
+                                        <div class="form-control form-control-lg text-center" style="font-size: 1.5rem; font-weight: 700;">{{ estatisticas_editaveis.total_grupos_prejovens|default:"--" }}</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="form-label small fw-semibold">Participantes:</span>
+                                        <div class="form-control text-center">{{ estatisticas_editaveis.participantes_prejovens|default:"--" }}</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="form-label small fw-semibold">🕯️ Bahá'ís:</span>
+                                        <div class="form-control text-center">{{ estatisticas_editaveis.participantes_prejovens_bahais|default:"--" }}</div>
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted">Sistema: {{ estatisticas_bd.grupos_prejovens }} grupos</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Aulas para Crianças -->
+                        <div class="col-md-6 col-lg-3">
+                            <div class="activity-edit-card p-3 border rounded-3 h-100" style="background: linear-gradient(145deg, #fff3e0, #f8f9fa); border-color: #ff9800 !important;">
+                                <div class="text-center mb-3">
+                                    <div class="activity-icon stats-success mb-2">🎨</div>
+                                    <h6 class="fw-bold text-warning mb-0">Aulas para Crianças</h6>
+                                </div>
+                                <div class="text-center">
+                                    <div class="mb-2">
+                                        <span class="form-label small fw-semibold">Total de Aulas:</span>
+                                        <div class="form-control form-control-lg text-center" style="font-size: 1.5rem; font-weight: 700;">{{ estatisticas_editaveis.total_aulas_criancas|default:"--" }}</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="form-label small fw-semibold">Participantes:</span>
+                                        <div class="form-control text-center">{{ estatisticas_editaveis.participantes_criancas|default:"--" }}</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="form-label small fw-semibold">🕯️ Bahá'ís:</span>
+                                        <div class="form-control text-center">{{ estatisticas_editaveis.participantes_criancas_bahais|default:"--" }}</div>
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted">Sistema: {{ estatisticas_bd.aulas_criancas }} aulas</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Círculos de Estudo -->
+                        <div class="col-md-6 col-lg-3">
+                            <div class="activity-edit-card p-3 border rounded-3 h-100" style="background: linear-gradient(145deg, #e8f5e8, #f8f9fa); border-color: #4caf50 !important;">
+                                <div class="text-center mb-3">
+                                    <div class="activity-icon stats-info mb-2">📚</div>
+                                    <h6 class="fw-bold text-success mb-0">Círculos de Estudo</h6>
+                                </div>
+                                <div class="text-center">
+                                    <div class="mb-2">
+                                        <span class="form-label small fw-semibold">Total de Círculos:</span>
+                                        <div class="form-control form-control-lg text-center" style="font-size: 1.5rem; font-weight: 700;">{{ estatisticas_editaveis.total_circulos_estudo|default:"--" }}</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="form-label small fw-semibold">Participantes:</span>
+                                        <div class="form-control text-center">{{ estatisticas_editaveis.participantes_circulos|default:"--" }}</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="form-label small fw-semibold">🕯️ Bahá'ís:</span>
+                                        <div class="form-control text-center">{{ estatisticas_editaveis.participantes_circulos_bahais|default:"--" }}</div>
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted">Sistema: {{ estatisticas_bd.circulos_estudo }} círculos</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reuniões Devocionais -->
+                        <div class="col-md-6 col-lg-3">
+                            <div class="activity-edit-card p-3 border rounded-3 h-100" style="background: linear-gradient(145deg, #fff8e1, #f8f9fa); border-color: #ffc107 !important;">
+                                <div class="text-center mb-3">
+                                    <div class="activity-icon stats-warning mb-2">🕯️</div>
+                                    <h6 class="fw-bold text-warning mb-0">Reuniões Devocionais</h6>
+                                </div>
+                                <div class="text-center">
+                                    <div class="mb-2">
+                                        <span class="form-label small fw-semibold">Total de Reuniões:</span>
+                                        <div class="form-control form-control-lg text-center" style="font-size: 1.5rem; font-weight: 700;">{{ estatisticas_editaveis.total_reunioes_devocionais|default:"--" }}</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="form-label small fw-semibold">Participantes:</span>
+                                        <div class="form-control text-center">{{ estatisticas_editaveis.participantes_devocionais|default:"--" }}</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="form-label small fw-semibold">🕯️ Bahá'ís:</span>
+                                        <div class="form-control text-center">{{ estatisticas_editaveis.participantes_devocionais_bahais|default:"--" }}</div>
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted">Sistema: {{ estatisticas_bd.reunioes_devocionais }} reuniões</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumo Total -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-secondary border-0 rounded-3">
+                                <h6 class="text-center text-secondary mb-3">📊 Resumo do Ciclo {{ ciclo_atual.numero }}</h6>
+                                <div class="row text-center">
+                                    <div class="col-md-3">
+                                        <h4 class="text-primary mb-1">{{ historico.total_atividades }}</h4>
+                                        <small class="text-muted">Total de Atividades</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h4 class="text-success mb-1">{{ historico.total_participantes }}</h4>
+                                        <small class="text-muted">Total de Participantes</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h4 class="text-warning mb-1">{{ historico.total_grupos_familias }}</h4>
+                                        <small class="text-muted">Grupos de Famílias</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h4 class="text-info mb-1">{{ historico.total_livros }}</h4>
+                                        <small class="text-muted">Total de Estudos</small>
+                                    </div>
+                                </div>
+                                <div class="row text-center mt-3">
+                                    <div class="col-md-4">
+                                        <h4 class="text-warning mb-1">🕯️ {{ historico.total_participantes_bahais }}</h4>
+                                        <small class="text-muted">Total de Participantes Bahá'ís</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h4 class="text-secondary mb-1">{{ historico.participantes_grupos_familias_bahais }}</h4>
+                                        <small class="text-muted">Bahá'ís em Grupos de Famílias</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h4 class="text-muted mb-1">{{ historico.data_registro|date:"d/m/Y" }}</h4>
+                                        <small class="text-muted">Data de Registro</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalhamento das Atividades do Sistema -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="detail-card card">
+                <div class="card-header" style="background: linear-gradient(90deg, #17a2b8, #138496); color: white; border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0">🖥️ Detalhamento das Atividades do Sistema</h5>
+                    <small class="opacity-75">Dados registrados no final do ciclo conforme o sistema</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Grupos de Pré-jovens -->
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="detail-card p-3 h-100" style="background: linear-gradient(145deg, #e3f2fd, #f8f9fa); border: 1px solid #2196f3;">
+                                <div class="text-center mb-3">
+                                    <div class="activity-icon text-primary">👥</div>
+                                    <h6 class="text-primary fw-bold">Grupos de Pré-jovens</h6>
+                                </div>
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td><i class="fas fa-users text-muted"></i> Total de Grupos:</td>
+                                        <td><strong class="text-primary">{{ estatisticas_bd.grupos_prejovens }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-user-friends text-muted"></i> Participantes:</td>
+                                        <td><strong class="text-success">{{ estatisticas_bd.participantes_prejovens }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-star text-muted"></i> Bahá'ís:</td>
+                                        <td><strong class="text-info">{{ estatisticas_bd.participantes_prejovens_bahais }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-database text-muted"></i> Fonte:</td>
+                                        <td><span class="badge bg-secondary">Histórico</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Aulas para Crianças -->
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="detail-card p-3 h-100" style="background: linear-gradient(145deg, #fff3e0, #f8f9fa); border: 1px solid #ff9800;">
+                                <div class="text-center mb-3">
+                                    <div class="activity-icon text-warning">🎨</div>
+                                    <h6 class="text-warning fw-bold">Aulas para Crianças</h6>
+                                </div>
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td><i class="fas fa-chalkboard text-muted"></i> Total de Aulas:</td>
+                                        <td><strong class="text-primary">{{ estatisticas_bd.aulas_criancas }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-child text-muted"></i> Participantes:</td>
+                                        <td><strong class="text-success">{{ estatisticas_bd.participantes_criancas }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-star text-muted"></i> Bahá'ís:</td>
+                                        <td><strong class="text-info">{{ estatisticas_bd.participantes_criancas_bahais }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-database text-muted"></i> Fonte:</td>
+                                        <td><span class="badge bg-secondary">Histórico</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Círculos de Estudo -->
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="detail-card p-3 h-100" style="background: linear-gradient(145deg, #e8f5e8, #f8f9fa); border: 1px solid #4caf50;">
+                                <div class="text-center mb-3">
+                                    <div class="activity-icon text-success">📚</div>
+                                    <h6 class="text-success fw-bold">Círculos de Estudo</h6>
+                                </div>
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td><i class="fas fa-book text-muted"></i> Total de Círculos:</td>
+                                        <td><strong class="text-primary">{{ estatisticas_bd.circulos_estudo }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-users text-muted"></i> Participantes:</td>
+                                        <td><strong class="text-success">{{ estatisticas_bd.participantes_circulos }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-star text-muted"></i> Bahá'ís:</td>
+                                        <td><strong class="text-info">{{ estatisticas_bd.participantes_circulos_bahais }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-database text-muted"></i> Fonte:</td>
+                                        <td><span class="badge bg-secondary">Histórico</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Reuniões Devocionais -->
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <div class="detail-card p-3 h-100" style="background: linear-gradient(145deg, #fff8e1, #f8f9fa); border: 1px solid #ffc107;">
+                                <div class="text-center mb-3">
+                                    <div class="activity-icon text-warning">🕯️</div>
+                                    <h6 class="text-warning fw-bold">Reuniões Devocionais</h6>
+                                </div>
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td><i class="fas fa-candle-holder text-muted"></i> Total de Reuniões:</td>
+                                        <td><strong class="text-primary">{{ estatisticas_bd.reunioes_devocionais }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-users text-muted"></i> Participantes:</td>
+                                        <td><strong class="text-success">{{ estatisticas_bd.participantes_devocionais }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-star text-muted"></i> Bahá'ís:</td>
+                                        <td><strong class="text-info">{{ estatisticas_bd.participantes_devocionais_bahais }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><i class="fas fa-home text-muted"></i> Fonte:</td>
+                                        <td><span class="badge bg-secondary">Histórico</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumo Total do Sistema -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info border-0 rounded-3">
+                                <div class="row text-center">
+                                    <div class="col-md-3">
+                                        <h4 class="text-primary mb-1">{{ historico.total_atividades }}</h4>
+                                        <small class="text-muted">Total de Atividades</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h4 class="text-success mb-1">{{ historico.total_participantes }}</h4>
+                                        <small class="text-muted">Total de Participantes</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h4 class="text-info mb-1">{{ historico.total_grupos_familias }}</h4>
+                                        <small class="text-muted">Grupos de Famílias</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h4 class="text-warning mb-1">{{ historico.total_livros }}</h4>
+                                        <small class="text-muted">Total de Estudos</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demografia e Dados do Sistema -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="detail-card card h-100">
+                <div class="card-header" style="background: linear-gradient(90deg, #28a745, #20c997); color: white; border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0">👨‍👩‍👧‍👦 Demografia</h5>
+                    <small class="opacity-75">Dados baseados nos contatos cadastrados na época do ciclo</small>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><i class="fas fa-child text-success"></i> Crianças (até 11 anos):</td>
+                            <td><strong class="text-success h5">{{ estatisticas_bd.criancas_sistema }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-user-graduate text-warning"></i> Pré-jovens (12-14 anos):</td>
+                            <td><strong class="text-warning h5">{{ estatisticas_bd.prejovens_sistema }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-user text-primary"></i> Jovens (15-30 anos):</td>
+                            <td><strong class="text-primary h5">{{ estatisticas_bd.jovens_sistema }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-user-tie text-info"></i> Adultos (30+ anos):</td>
+                            <td><strong class="text-info h5">{{ estatisticas_bd.adultos_sistema }}</strong></td>
+                        </tr>
+                        <tr class="border-top">
+                            <td><strong><i class="fas fa-users text-warning"></i> Total de Pessoas:</strong></td>
+                            <td><strong class="text-warning h4">{{ estatisticas_bd.total_pessoas_sistema }}</strong></td>
+                        </tr>
+                        <tr class="border-top mt-2" style="border-top: 2px solid #dee2e6 !important;">
+                            <td><strong><i class="fas fa-home text-secondary"></i> Famílias Cadastradas:</strong></td>
+                            <td><strong class="text-secondary h5">{{ estatisticas_bd.total_familias }}</strong></td>
+                        </tr>
+                    </table>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i> 
+                        As famílias são contadas separadamente e não integram o total de pessoas
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dados do Sistema -->
+        <div class="col-md-6">
+            <div class="detail-card card h-100">
+                <div class="card-header" style="background: linear-gradient(90deg, #6f42c1, #563d7c); color: white; border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0">💾 Dados do Sistema</h5>
+                    <small class="opacity-75">Estudos e livros do banco de dados na época do ciclo</small>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><i class="fas fa-play text-success"></i> Estudos em Andamento:</td>
+                            <td><strong class="text-success h5">{{ estatisticas_bd.estudos_andamento }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-pause text-warning"></i> Estudos Pausados:</td>
+                            <td><strong class="text-warning h5">{{ estatisticas_bd.estudos_pausados }}</strong></td>
+                        </tr>
+                        <tr class="border-top">
+                            <td><strong><i class="fas fa-book text-info"></i> Total de Estudos:</strong></td>
+                            <td><strong class="text-info h4">{{ estatisticas_bd.total_estudos }}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Detalhadas dos Livros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="detail-card card">
+                <div class="card-header" style="background: linear-gradient(90deg, #17a2b8, #20c997); color: white; border-radius: 12px 12px 0 0;">
+                    <h5 class="mb-0">📚 Estatísticas Detalhadas dos Livros</h5>
+                    <small class="opacity-75">Livros iniciados e concluídos por categoria na época do ciclo</small>
+                </div>
+                <div class="card-body">
+                    <!-- Resumo Geral -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="text-center p-3" style="background: linear-gradient(145deg, #e3f2fd, #f8f9fa); border: 2px solid #2196f3; border-radius: 12px;">
+                                <h4 class="text-primary mb-1">{{ estatisticas_bd.total_livros_iniciados }}</h4>
+                                <small class="text-muted"><i class="fas fa-play-circle"></i> Livros Iniciados</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3" style="background: linear-gradient(145deg, #e8f5e8, #f8f9fa); border: 2px solid #4caf50; border-radius: 12px;">
+                                <h4 class="text-success mb-1">{{ estatisticas_bd.total_livros_concluidos }}</h4>
+                                <small class="text-muted"><i class="fas fa-check-circle"></i> Livros Concluídos</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3" style="background: linear-gradient(145deg, #fff3e0, #f8f9fa); border: 2px solid #ff9800; border-radius: 12px;">
+                                <h4 class="text-warning mb-1">{{ estatisticas_bd.total_livros_geral }}</h4>
+                                <small class="text-muted"><i class="fas fa-books"></i> Total Geral</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalhamento por Categoria com Livros Individuais -->
+                    {% if estatisticas_bd.livros_por_categoria %}
+                    <h6 class="mb-3 text-secondary"><i class="fas fa-layer-group"></i> Por Categoria e Livros:</h6>
+                    
+                    {% for categoria_nome, stats in estatisticas_bd.livros_por_categoria.items %}
+                    <div class="mb-4">
+                        <!-- Header da Categoria -->
+                        <div class="card border-0 mb-3" style="background: linear-gradient(145deg, {{ stats.cor }}15, #f8f9fa); border-left: 4px solid {{ stats.cor }} !important;">
+                            <div class="card-body p-3">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h5 class="card-title mb-1" style="color: {{ stats.cor }};">
+                                            <i class="fas fa-bookmark"></i> {{ categoria_nome }}
+                                        </h5>
+                                        <small class="text-muted">Dados registrados no final do ciclo</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <div class="fw-bold text-primary">{{ stats.iniciados }}</div>
+                                                <small class="text-muted">Iniciados</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="fw-bold text-success">{{ stats.concluidos }}</div>
+                                                <small class="text-muted">Concluídos</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="fw-bold" style="color: {{ stats.cor }};">{{ stats.total }}</div>
+                                                <small class="text-muted">Total</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Barra de progresso da categoria -->
+                                        {% if stats.total > 0 %}
+                                        <div class="mt-2">
+                                            {% widthratio stats.concluidos stats.total 100 as percentage %}
+                                            <div class="progress" style="height: 4px;">
+                                                <div class="progress-bar" style="width: {{ percentage }}%; background-color: {{ stats.cor }};" role="progressbar"></div>
+                                            </div>
+                                            <small class="text-muted text-center d-block">{{ percentage }}% concluídos</small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Livros desta Categoria (3 colunas) -->
+                        <div class="row">
+                            {% for livro in estatisticas_bd.livros_detalhados %}
+                                {% if livro.categoria == categoria_nome %}
+                                <div class="col-lg-4 mb-3">
+                                    <div class="card border-0 h-100" style="background: linear-gradient(145deg, {{ livro.cor_categoria }}08, #f8f9fa); border-left: 2px solid {{ livro.cor_categoria }} !important;">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title mb-2" style="color: {{ livro.cor_categoria }}; font-size: 0.95rem;">
+                                                <i class="fas fa-book"></i> {{ livro.nome }}
+                                            </h6>
+                                            
+                                            <div class="row text-center mb-2">
+                                                <div class="col-4">
+                                                    <div class="fw-bold text-primary h5 mb-0">{{ livro.iniciados }}</div>
+                                                    <small class="text-muted" style="font-size: 0.75rem;">Iniciados</small>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="fw-bold text-success h5 mb-0">{{ livro.concluidos }}</div>
+                                                    <small class="text-muted" style="font-size: 0.75rem;">Concluídos</small>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="fw-bold h5 mb-0" style="color: {{ livro.cor_categoria }};">{{ livro.total }}</div>
+                                                    <small class="text-muted" style="font-size: 0.75rem;">Total</small>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Barra de progresso para livro individual -->
+                                            {% if livro.total > 0 %}
+                                            <div class="mt-2">
+                                                {% widthratio livro.concluidos livro.total 100 as livro_percentage %}
+                                                <div class="progress" style="height: 3px;">
+                                                    <div class="progress-bar" style="width: {{ livro_percentage }}%; background-color: {{ livro.cor_categoria }};" role="progressbar"></div>
+                                                </div>
+                                                <small class="text-muted text-center d-block" style="font-size: 0.7rem;">{{ livro_percentage }}% concluído</small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle"></i> Nenhum estudo de livro foi registrado para este ciclo.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegação -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="{% url 'contact:historico_ciclos' %}" class="btn btn-secondary btn-lg me-3">
+                <i class="fas fa-arrow-left"></i> Voltar ao Histórico Geral
+            </a>
+            <a href="{% url 'contact:dashboard_estatisticas' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-chart-line"></i> Dashboard Atual
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts para Animações -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animação de entrada para os cards
+    const cards = document.querySelectorAll('.stats-card, .detail-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    // Efeito de contagem nos números
+    function animateNumbers() {
+        const numbers = document.querySelectorAll('.stats-number');
+        numbers.forEach(number => {
+            const target = parseInt(number.textContent);
+            if (target > 0) {
+                let current = 0;
+                const increment = target / 20;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        number.textContent = target;
+                        clearInterval(timer);
+                    } else {
+                        number.textContent = Math.floor(current);
+                    }
+                }, 50);
+            }
+        });
+    }
+
+    // Iniciar animação de números após um delay
+    setTimeout(animateNumbers, 800);
+});
+</script>
+{% endblock %}

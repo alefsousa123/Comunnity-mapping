@@ -1,0 +1,1298 @@
+{% extends 'global/base.html' %}
+
+{% block title %}Editar Estatísticas{% endblock %}
+
+{% block content %}
+<style>
+    .form-section {
+        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .form-section:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: #007bff;
+    }
+    
+    .section-header {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .form-control {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .summary-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .bahai-summary {
+        background: linear-gradient(135deg, #ffd700, #ffed4e);
+        color: #333;
+        border-radius: 15px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .input-icon {
+        position: relative;
+    }
+    
+    .input-icon .form-control {
+        padding-left: 2.5rem;
+    }
+    
+    .input-icon i {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+    
+    .btn-gradient {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        border: none;
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+        color: white;
+    }
+    
+    .activity-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .tips-card {
+        background: linear-gradient(135deg, #17a2b8, #138496);
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="display-5">✏️ Editar Estatísticas</h1>
+                <p class="lead text-muted">Mantenha os dados da sua comunidade sempre atualizados</p>
+                <div class="btn-group" role="group">
+                    <a href="{% url 'contact:dashboard_estatisticas' %}" class="btn btn-outline-secondary">← Voltar ao Dashboard</a>
+                    <a href="{% url 'contact:editar_configuracao' %}" class="btn btn-warning">
+                        <i class="fas fa-cog"></i> Configurações
+                    </a>
+                </div>
+            </div>
+
+            <!-- Opções Rápidas -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-primary">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5><i class="fas fa-lightbulb"></i> Dica: Edição Inteligente</h5>
+                                <p class="mb-0">
+                                    ✅ <strong>Totais Gerais:</strong> Use os campos grandes abaixo para números totais<br>
+                                    🎯 <strong>Edição Individual:</strong> Se você tiver atividades cadastradas, poderá editá-las individualmente<br>
+                                    📊 <strong>Cálculo Automático:</strong> Os resumos são calculados automaticamente conforme você digita
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="btn-group-vertical" role="group">
+                                    <a href="{% url 'contact:grupoprejovens_create' %}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-plus"></i> Criar Grupo de Pré-jovens
+                                    </a>
+                                    <a href="{% url 'contact:aulacrianca_create' %}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-plus"></i> Criar Aula para Crianças
+                                    </a>
+                                    <a href="{% url 'contact:circuloestudo_create' %}" class="btn btn-info btn-sm text-white">
+                                        <i class="fas fa-plus"></i> Criar Círculo de Estudo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            <form method="post" id="statisticsForm">
+                {% csrf_token %}
+                        
+                <!-- Atividades Comunitárias -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="mb-0">👥 Atividades Comunitárias</h4>
+                    </div>
+
+                    <!-- Opção de Auto-preenchimento -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-success">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h6><i class="fas fa-magic"></i> Auto-preenchimento Inteligente</h6>
+                                        <p class="mb-0">Clique no botão ao lado para preencher automaticamente os campos com os dados atuais do seu banco de dados.</p>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <button type="button" class="btn btn-success btn-lg" id="autoFillBtn">
+                                            <i class="fas fa-magic"></i> Preencher Automaticamente
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Grupos de Pré-jovens -->
+                    <div class="mb-4">
+                        <div class="activity-badge bg-primary text-white">👥 Grupos de Pré-jovens</div>
+                        
+                        <!-- Edição Inline dos Grupos -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h6 class="fw-bold mb-3">📝 Editar Grupos Individualmente:</h6>
+                                {% if grupos_prejovens %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-primary">
+                                            <tr>
+                                                <th>👥 Grupo</th>
+                                                <th>👤 Animador</th>
+                                                <th>📍 Local</th>
+                                                <th>👥 Participantes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for grupo in grupos_prejovens %}
+                                            <tr>
+                                                <td class="fw-bold">{{ grupo.nome|default:"Grupo sem nome" }}</td>
+                                                <td>{{ grupo.animador.first_name|default:"Não informado" }}</td>
+                                                <td>{{ grupo.rua.description|default:"Local não informado" }}</td>
+                                                <td>
+                                                    <div class="input-icon">
+                                                        <i class="fas fa-users"></i>
+                                                        <input type="number" class="form-control form-control-sm" 
+                                                               name="prejovens_{{ grupo.id }}_participantes" 
+                                                               value="{{ grupo.pre_jovens.count|default:0 }}" 
+                                                               min="0" style="padding-left: 2rem;">
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6><i class="fas fa-info-circle"></i> Nenhum grupo cadastrado</h6>
+                                            <p class="mb-0">Você ainda não cadastrou grupos de pré-jovens. Cadastre alguns grupos primeiro e depois volte aqui para editar os participantes individualmente.</p>
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            <a href="{% url 'contact:grupoprejovens_create' %}" class="btn btn-primary">
+                                                <i class="fas fa-plus"></i> Criar Grupo
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Totais Gerais -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="total_grupos_prejovens" class="form-label fw-bold">Total de Grupos</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-users"></i>
+                                    <input type="number" class="form-control form-control-lg" id="total_grupos_prejovens" 
+                                           name="total_grupos_prejovens" value="{{ estatisticas.total_grupos_prejovens }}" 
+                                           min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="participantes_prejovens" class="form-label fw-bold">Total de Participantes</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-user-friends"></i>
+                                    <input type="number" class="form-control form-control-lg" id="participantes_prejovens" 
+                                           name="participantes_prejovens" value="{{ estatisticas.participantes_prejovens }}" 
+                                           min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="participantes_prejovens_bahais" class="form-label fw-bold">Participantes Bahá'ís</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-star"></i>
+                                    <input type="number" class="form-control form-control-lg" id="participantes_prejovens_bahais" 
+                                           name="participantes_prejovens_bahais" value="{{ estatisticas.participantes_prejovens_bahais }}" 
+                                           min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aulas para Crianças -->
+                    <div class="mb-4">
+                        <div class="activity-badge bg-success text-white">🎨 Aulas Bahá'ís para Crianças</div>
+                        
+                        <!-- Edição Inline das Aulas -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h6 class="fw-bold mb-3">📝 Editar Aulas Individualmente:</h6>
+                                {% if aulas_criancas %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-success">
+                                            <tr>
+                                                <th>🎨 Aula</th>
+                                                <th>👩‍🏫 Professor</th>
+                                                <th>📍 Local</th>
+                                                <th>👥 Participantes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for aula in aulas_criancas %}
+                                            <tr>
+                                                <td class="fw-bold">{{ aula.nome|default:"Aula sem nome" }}</td>
+                                                <td>{{ aula.professor.first_name|default:"Não informado" }}</td>
+                                                <td>{{ aula.rua.description|default:"Local não informado" }}</td>
+                                                <td>
+                                                    <div class="input-icon">
+                                                        <i class="fas fa-child"></i>
+                                                        <input type="number" class="form-control form-control-sm" 
+                                                               name="aula_{{ aula.id }}_participantes" 
+                                                               value="{{ aula.participantes.count|default:0 }}" 
+                                                               min="0" style="padding-left: 2rem;">
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6><i class="fas fa-info-circle"></i> Nenhuma aula cadastrada</h6>
+                                            <p class="mb-0">Você ainda não cadastrou aulas para crianças. Cadastre algumas aulas primeiro e depois volte aqui para editar os participantes individualmente.</p>
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            <a href="{% url 'contact:aulacrianca_create' %}" class="btn btn-success">
+                                                <i class="fas fa-plus"></i> Criar Aula
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Totais Gerais -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="total_aulas_criancas" class="form-label fw-bold">Total de Aulas</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-chalkboard"></i>
+                                    <input type="number" class="form-control form-control-lg" id="total_aulas_criancas" 
+                                           name="total_aulas_criancas" value="{{ estatisticas.total_aulas_criancas }}" 
+                                           min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="participantes_criancas" class="form-label fw-bold">Total de Participantes</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-child"></i>
+                                    <input type="number" class="form-control form-control-lg" id="participantes_criancas" 
+                                           name="participantes_criancas" value="{{ estatisticas.participantes_criancas }}" 
+                                           min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="participantes_criancas_bahais" class="form-label fw-bold">Participantes Bahá'ís</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-star"></i>
+                                    <input type="number" class="form-control form-control-lg" id="participantes_criancas_bahais" 
+                                           name="participantes_criancas_bahais" value="{{ estatisticas.participantes_criancas_bahais }}" 
+                                           min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Círculos de Estudo -->
+                    <div class="mb-0">
+                        <div class="activity-badge bg-info text-white">📚 Círculos de Estudo</div>
+                        
+                        <!-- Edição Inline dos Círculos -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h6 class="fw-bold mb-3">📝 Editar Círculos Individualmente:</h6>
+                                {% if circulos_estudo %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-info">
+                                            <tr>
+                                                <th>📚 Círculo</th>
+                                                <th>📍 Local</th>
+                                                <th>👥 Participantes</th>
+                                                <th>📖 Livro</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for circulo in circulos_estudo %}
+                                            <tr>
+                                                <td class="fw-bold">{{ circulo.nome|default:"Círculo sem nome" }}</td>
+                                                <td>{{ circulo.rua.description|default:"Local não informado" }}</td>
+                                                <td>
+                                                    <div class="input-icon">
+                                                        <i class="fas fa-users"></i>
+                                                        <input type="number" class="form-control form-control-sm" 
+                                                               name="circulo_{{ circulo.id }}_participantes" 
+                                                               value="{{ circulo.participantes.count|default:0 }}" 
+                                                               min="0" style="padding-left: 2rem;">
+                                                    </div>
+                                                </td>
+                                                <td>{{ circulo.livro|default:"Não definido" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6><i class="fas fa-info-circle"></i> Nenhum círculo cadastrado</h6>
+                                            <p class="mb-0">Você ainda não cadastrou círculos de estudo. Cadastre alguns círculos primeiro e depois volte aqui para editar os participantes individualmente.</p>
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            <a href="{% url 'contact:circuloestudo_create' %}" class="btn btn-info text-white">
+                                                <i class="fas fa-plus"></i> Criar Círculo
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Totais Gerais -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="total_circulos_estudo" class="form-label fw-bold">Total de Círculos</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-book"></i>
+                                    <input type="number" class="form-control form-control-lg" id="total_circulos_estudo" 
+                                           name="total_circulos_estudo" value="{{ estatisticas.total_circulos_estudo }}" 
+                                           min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="participantes_circulos" class="form-label fw-bold">Total de Participantes</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-users"></i>
+                                    <input type="number" class="form-control form-control-lg" id="participantes_circulos" 
+                                           name="participantes_circulos" value="{{ estatisticas.participantes_circulos }}" 
+                                           min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="participantes_circulos_bahais" class="form-label fw-bold">Participantes Bahá'ís</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-star"></i>
+                                    <input type="number" class="form-control form-control-lg" id="participantes_circulos_bahais" 
+                                           name="participantes_circulos_bahais" value="{{ estatisticas.participantes_circulos_bahais }}" 
+                                           min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reuniões Devocionais -->
+                    <div class="mb-0">
+                        <div class="activity-badge bg-warning text-dark">🕯️ Reuniões Devocionais</div>
+                        
+                        <!-- Edição Inline das Reuniões -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h6 class="fw-bold mb-3">📝 Editar Reuniões Individualmente:</h6>
+                                {% if reunioes_devocionais %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-warning">
+                                            <tr>
+                                                <th>🕯️ Reunião</th>
+                                                <th>📍 Local</th>
+                                                <th>📅 Frequência</th>
+                                                <th>👥 Participantes</th>
+                                                <th>✅ Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for reuniao in reunioes_devocionais %}
+                                            <tr>
+                                                <td class="fw-bold">{{ reuniao.nome|default:"Reunião sem nome" }}</td>
+                                                <td>{{ reuniao.rua.description|default:"Local não informado" }}</td>
+                                                <td>{{ reuniao.frequencia }} {% if reuniao.dia_semana %}({{ reuniao.dia_semana }}){% endif %}</td>
+                                                <td>
+                                                    <div class="input-icon">
+                                                        <i class="fas fa-users"></i>
+                                                        <input type="number" class="form-control form-control-sm" 
+                                                               name="reuniao_{{ reuniao.id }}_participantes" 
+                                                               value="{{ reuniao.numero_participantes|default:0 }}" 
+                                                               min="0" style="padding-left: 2rem;">
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {% if reuniao.ativa %}
+                                                        <span class="badge bg-success">Ativa</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">Inativa</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6><i class="fas fa-info-circle"></i> Nenhuma reunião cadastrada</h6>
+                                            <p class="mb-0">Você ainda não cadastrou reuniões devocionais. Cadastre algumas reuniões primeiro e depois volte aqui para editar os participantes individualmente.</p>
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            <button type="button" class="btn btn-warning" onclick="alert('Em breve: Criar Reunião Devocional')">
+                                                <i class="fas fa-plus"></i> Criar Reunião
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Totais Gerais -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="total_reunioes_devocionais" class="form-label fw-bold">Total de Reuniões</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-pray"></i>
+                                    <input type="number" class="form-control form-control-lg" id="total_reunioes_devocionais" 
+                                           name="total_reunioes_devocionais" value="{{ estatisticas.total_reunioes_devocionais }}" 
+                                           min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="participantes_devocionais" class="form-label fw-bold">Total de Participantes</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-users"></i>
+                                    <input type="number" class="form-control form-control-lg" id="participantes_devocionais" 
+                                           name="participantes_devocionais" value="{{ estatisticas.participantes_devocionais }}" 
+                                           min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="participantes_devocionais_bahais" class="form-label fw-bold">Participantes Bahá'ís</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-star"></i>
+                                    <input type="number" class="form-control form-control-lg" id="participantes_devocionais_bahais" 
+                                           name="participantes_devocionais_bahais" value="{{ estatisticas.participantes_devocionais_bahais }}" 
+                                           min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nova Seção: Detalhamento Editável pelo Usuário -->
+                <div class="form-section" style="background: linear-gradient(145deg, #fff3cd, #f8f9fa); border: 2px solid #ffc107;">
+                    <div class="section-header" style="background: linear-gradient(45deg, #ffc107, #e0a800);">
+                        <h4 class="mb-0 text-dark">📝 Detalhamento das Atividades - Edição Manual</h4>
+                        <small class="opacity-75 text-dark">Configure manualmente os detalhes de cada tipo de atividade</small>
+                    </div>
+
+                    <!-- Detalhamento Editável dos Grupos de Pré-jovens -->
+                    <div class="mb-4">
+                        <div class="activity-badge bg-primary text-white">👥 Detalhamento - Grupos de Pré-jovens</div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_prejovens_grupos" class="form-label fw-bold">Número de Grupos Ativos</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-users"></i>
+                                    <input type="number" class="form-control form-control-lg" id="detalhes_prejovens_grupos" 
+                                           name="detalhes_prejovens_grupos" value="{{ estatisticas.total_grupos_prejovens|default:0 }}" 
+                                           min="0">
+                                </div>
+                                <small class="text-muted">Quantos grupos de pré-jovens estão ativos na sua região</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_prejovens_animadores" class="form-label fw-bold">Número de Animadores</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-user-tie"></i>
+                                    <input type="number" class="form-control form-control-lg" id="detalhes_prejovens_animadores" 
+                                           name="detalhes_prejovens_animadores" value="{{ estatisticas.animadores_prejovens|default:0 }}" 
+                                           min="0">
+                                </div>
+                                <small class="text-muted">Quantos animadores estão servindo atualmente</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_prejovens_frequencia" class="form-label fw-bold">Frequência Média de Encontros</label>
+                                <select class="form-select form-select-lg" id="detalhes_prejovens_frequencia" name="detalhes_prejovens_frequencia">
+                                    <option value="semanal">Semanal</option>
+                                    <option value="quinzenal">Quinzenal</option>
+                                    <option value="mensal">Mensal</option>
+                                    <option value="irregular">Irregular</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_prejovens_locais" class="form-label fw-bold">Número de Locais Diferentes</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <input type="number" class="form-control form-control-lg" id="detalhes_prejovens_locais" 
+                                           name="detalhes_prejovens_locais" value="{{ estatisticas.locais_prejovens|default:0 }}" 
+                                           min="0">
+                                </div>
+                                <small class="text-muted">Em quantos locais diferentes os grupos se reúnem</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalhamento Editável das Aulas para Crianças -->
+                    <div class="mb-4">
+                        <div class="activity-badge bg-success text-white">🎨 Detalhamento - Aulas para Crianças</div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_criancas_aulas" class="form-label fw-bold">Número de Aulas Ativas</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-child"></i>
+                                    <input type="number" class="form-control form-control-lg" id="detalhes_criancas_aulas" 
+                                           name="detalhes_criancas_aulas" value="{{ estatisticas.total_aulas_criancas|default:0 }}" 
+                                           min="0">
+                                </div>
+                                <small class="text-muted">Quantas aulas para crianças estão funcionando</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_criancas_professores" class="form-label fw-bold">Número de Professores</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                    <input type="number" class="form-control form-control-lg" id="detalhes_criancas_professores" 
+                                           name="detalhes_criancas_professores" value="{{ estatisticas.professores_criancas|default:0 }}" 
+                                           min="0">
+                                </div>
+                                <small class="text-muted">Quantos professores estão envolvidos</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_criancas_idades" class="form-label fw-bold">Faixa Etária Principal</label>
+                                <select class="form-select form-select-lg" id="detalhes_criancas_idades" name="detalhes_criancas_idades">
+                                    <option value="5-7">5 a 7 anos</option>
+                                    <option value="6-9">6 a 9 anos</option>
+                                    <option value="8-11">8 a 11 anos</option>
+                                    <option value="10-14">10 a 14 anos</option>
+                                    <option value="mista">Idades mistas</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_criancas_series" class="form-label fw-bold">Séries Sendo Estudadas</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-book"></i>
+                                    <input type="text" class="form-control form-control-lg" id="detalhes_criancas_series" 
+                                           name="detalhes_criancas_series" value="{{ estatisticas.series_criancas|default:'' }}" 
+                                           placeholder="Ex: Série 1, Série 2">
+                                </div>
+                                <small class="text-muted">Quais séries do currículo estão sendo estudadas</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalhamento Editável dos Círculos de Estudo -->
+                    <div class="mb-4">
+                        <div class="activity-badge bg-info text-white">📚 Detalhamento - Círculos de Estudo</div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_circulos_ativos" class="form-label fw-bold">Número de Círculos Ativos</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-book-open"></i>
+                                    <input type="number" class="form-control form-control-lg" id="detalhes_circulos_ativos" 
+                                           name="detalhes_circulos_ativos" value="{{ estatisticas.total_circulos_estudo|default:0 }}" 
+                                           min="0">
+                                </div>
+                                <small class="text-muted">Quantos círculos estão estudando atualmente</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_circulos_tutores" class="form-label fw-bold">Número de Tutores</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <input type="number" class="form-control form-control-lg" id="detalhes_circulos_tutores" 
+                                           name="detalhes_circulos_tutores" value="{{ estatisticas.tutores_circulos|default:0 }}" 
+                                           min="0">
+                                </div>
+                                <small class="text-muted">Quantos tutores estão facilitando círculos</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_circulos_livros" class="form-label fw-bold">Livros Principais em Estudo</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-books"></i>
+                                    <input type="text" class="form-control form-control-lg" id="detalhes_circulos_livros" 
+                                           name="detalhes_circulos_livros" value="{{ estatisticas.livros_circulos|default:'' }}" 
+                                           placeholder="Ex: Livro 1, Livro 2, Livro 7">
+                                </div>
+                                <small class="text-muted">Quais livros do Instituto Ruhi estão sendo estudados</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_circulos_conclusoes" class="form-label fw-bold">Círculos Concluídos (Último Ciclo)</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-certificate"></i>
+                                    <input type="number" class="form-control form-control-lg" id="detalhes_circulos_conclusoes" 
+                                           name="detalhes_circulos_conclusoes" value="{{ estatisticas.circulos_concluidos|default:0 }}" 
+                                           min="0">
+                                </div>
+                                <small class="text-muted">Quantos círculos foram concluídos no último ciclo</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalhamento Editável das Reuniões Devocionais -->
+                    <div class="mb-4">
+                        <div class="activity-badge bg-warning text-dark">🕯️ Detalhamento - Reuniões Devocionais</div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_devocionais_reunioes" class="form-label fw-bold">Número de Reuniões Regulares</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-pray"></i>
+                                    <input type="number" class="form-control form-control-lg" id="detalhes_devocionais_reunioes" 
+                                           name="detalhes_devocionais_reunioes" value="{{ estatisticas.total_reunioes_devocionais|default:0 }}" 
+                                           min="0">
+                                </div>
+                                <small class="text-muted">Quantas reuniões devocionais acontecem regularmente</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="detalhes_devocionais_facilitadores" class="form-label fw-bold">Número de Facilitadores</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-hands"></i>
+                                    <input type="number" class="form-control form-control-lg" id="detalhes_devocionais_facilitadores" 
+                                           name="detalhes_devocionais_facilitadores" value="{{ estatisticas.facilitadores_devocionais|default:0 }}" 
+                                           min="0">
+                                </div>
+                                <small class="text-muted">Quantas pessoas facilitam reuniões devocionais</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="detalhes_devocionais_participantes_total" class="form-label fw-bold">Total de Participantes</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-users"></i>
+                                    <input type="number" class="form-control form-control-lg" id="detalhes_devocionais_participantes_total" 
+                                           name="detalhes_devocionais_participantes_total" value="{{ estatisticas.participantes_devocionais|default:0 }}" 
+                                           min="0">
+                                </div>
+                                <small class="text-muted">Número total de participantes regulares</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="detalhes_devocionais_participantes_bahais" class="form-label fw-bold">Participantes Bahá'ís</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-star"></i>
+                                    <input type="number" class="form-control form-control-lg" id="detalhes_devocionais_participantes_bahais" 
+                                           name="detalhes_devocionais_participantes_bahais" value="{{ estatisticas.participantes_devocionais_bahais|default:0 }}" 
+                                           min="0">
+                                </div>
+                                <small class="text-muted">Quantos dos participantes são Bahá'ís</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="detalhes_devocionais_frequencia" class="form-label fw-bold">Frequência Principal</label>
+                                <select class="form-select form-select-lg" id="detalhes_devocionais_frequencia" name="detalhes_devocionais_frequencia">
+                                    <option value="semanal">Semanal</option>
+                                    <option value="quinzenal">Quinzenal</option>
+                                    <option value="mensal">Mensal</option>
+                                    <option value="especiais">Apenas em ocasiões especiais</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumo do Detalhamento -->
+                    <div class="alert alert-warning">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6><i class="fas fa-info-circle"></i> Sobre o Detalhamento Manual</h6>
+                                <p class="mb-0">Este detalhamento permite que você adicione informações específicas sobre como as atividades estão organizadas na sua comunidade. Estes dados complementam as estatísticas automáticas do sistema.</p>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <button type="button" class="btn btn-warning" onclick="calcularDetalhamento()">
+                                    <i class="fas fa-calculator"></i> Sincronizar com Totais
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nova Seção: Estatísticas do Banco de Dados -->
+                <div class="form-section" style="background: linear-gradient(145deg, #e8f4fd, #f8f9fa); border: 2px solid #007bff;">
+                    <div class="section-header" style="background: linear-gradient(45deg, #17a2b8, #138496);">
+                        <h4 class="mb-0">📊 Atividades Cadastradas no Sistema</h4>
+                        <small class="opacity-75">Dados automáticos baseados nas atividades que você cadastrou</small>
+                    </div>
+
+                    <!-- Resumo das Atividades do Banco -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h6><i class="fas fa-database"></i> Dados do Sistema</h6>
+                                        <p class="mb-0">Estes números são calculados automaticamente baseados nas atividades que você tem cadastradas no sistema. Compare com os números editáveis acima.</p>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <div class="btn-group-vertical" role="group">
+                                            <small class="text-muted">Atividades Cadastradas:</small>
+                                            <span class="badge bg-primary">{{ estatisticas_bd.grupos_prejovens }} Grupos de Pré-jovens</span>
+                                            <span class="badge bg-success">{{ estatisticas_bd.aulas_criancas }} Aulas para Crianças</span>
+                                            <span class="badge bg-info">{{ estatisticas_bd.circulos_estudo }} Círculos de Estudo</span>
+                                            <span class="badge bg-warning text-dark">{{ estatisticas_bd.reunioes_devocionais }} Reuniões Devocionais</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cards de Comparação -->
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card text-center" style="border: 2px solid #007bff;">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">👥 Pré-jovens</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="h4 text-primary">{{ estatisticas_bd.participantes_prejovens }}</div>
+                                    <small class="text-muted">Participantes no sistema</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="card text-center" style="border: 2px solid #28a745;">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">🎨 Crianças</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="h4 text-success">{{ estatisticas_bd.participantes_criancas }}</div>
+                                    <small class="text-muted">Participantes no sistema</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="card text-center" style="border: 2px solid #17a2b8;">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">📚 Círculos</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="h4 text-info">{{ estatisticas_bd.participantes_circulos }}</div>
+                                    <small class="text-muted">Participantes no sistema</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <div class="card text-center" style="border: 2px solid #ffc107;">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">🕯️ Devocionais</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="h4 text-warning">{{ estatisticas_bd.participantes_devocionais }}</div>
+                                    <small class="text-muted">Participantes no sistema</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total do Sistema -->
+                    <div class="text-center">
+                        <div class="card" style="background: linear-gradient(135deg, #17a2b8, #138496); color: white;">
+                            <div class="card-body">
+                                <h5>📊 Total de Participantes no Sistema</h5>
+                                <div class="h2">{{ estatisticas_bd.participantes_total }}</div>
+                                <small class="opacity-75">Soma automática de todas as atividades cadastradas</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demografia -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4 class="mb-0">👨‍👩‍👧‍👦 Demografia da Comunidade</h4>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="total_criancas" class="form-label fw-bold">Crianças (até 14 anos)</label>
+                            <div class="input-icon">
+                                <i class="fas fa-child"></i>
+                                <input type="number" class="form-control form-control-lg" id="total_criancas" 
+                                       name="total_criancas" value="{{ estatisticas.total_criancas }}" 
+                                       min="0" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="total_jovens" class="form-label fw-bold">Jovens (15-30 anos)</label>
+                            <div class="input-icon">
+                                <i class="fas fa-user"></i>
+                                <input type="number" class="form-control form-control-lg" id="total_jovens" 
+                                       name="total_jovens" value="{{ estatisticas.total_jovens }}" 
+                                       min="0" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="total_adultos" class="form-label fw-bold">Adultos (30+ anos)</label>
+                            <div class="input-icon">
+                                <i class="fas fa-user-tie"></i>
+                                <input type="number" class="form-control form-control-lg" id="total_adultos" 
+                                       name="total_adultos" value="{{ estatisticas.total_adultos }}" 
+                                       min="0" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumo em Tempo Real -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="summary-card">
+                            <h5 class="mb-3">📊 Participantes das Atividades</h5>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="h3" id="resumo_prejovens">{{ estatisticas.participantes_prejovens }}</div>
+                                    <small>Pré-jovens</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="h3" id="resumo_criancas_atividade">{{ estatisticas.participantes_criancas }}</div>
+                                    <small>Crianças</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="h3" id="resumo_circulos">{{ estatisticas.participantes_circulos }}</div>
+                                    <small>Círculos</small>
+                                </div>
+                            </div>
+                            <hr class="border-light">
+                            <div class="text-center">
+                                <div class="h2" id="resumo_total_participantes">{{ estatisticas.total_participantes }}</div>
+                                <strong>Total de Participantes</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="summary-card" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                            <h5 class="mb-3">👨‍👩‍👧‍👦 Demografia Total</h5>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="h3" id="resumo_criancas_demo">{{ estatisticas.total_criancas }}</div>
+                                    <small>Crianças</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="h3" id="resumo_jovens">{{ estatisticas.total_jovens }}</div>
+                                    <small>Jovens</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="h3" id="resumo_adultos">{{ estatisticas.total_adultos }}</div>
+                                    <small>Adultos</small>
+                                </div>
+                            </div>
+                            <hr class="border-light">
+                            <div class="text-center">
+                                <div class="h2" id="resumo_total_demografico">{{ estatisticas.total_criancas|add:estatisticas.total_jovens|add:estatisticas.total_adultos }}</div>
+                                <strong>Total Demografia</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Participantes Bahá'ís -->
+                <div class="bahai-summary">
+                    <h5 class="mb-3 text-center">🌟 Participantes Bahá'ís</h5>
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-2">
+                            <div class="bg-white rounded p-3">
+                                <div class="h4 text-primary" id="resumo_bahais_prejovens">{{ estatisticas.participantes_prejovens_bahais }}</div>
+                                <small class="text-muted">Pré-jovens</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="bg-white rounded p-3">
+                                <div class="h4 text-success" id="resumo_bahais_criancas">{{ estatisticas.participantes_criancas_bahais }}</div>
+                                <small class="text-muted">Crianças</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="bg-white rounded p-3">
+                                <div class="h4 text-info" id="resumo_bahais_circulos">{{ estatisticas.participantes_circulos_bahais }}</div>
+                                <small class="text-muted">Círculos</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="bg-white rounded p-3 border border-warning">
+                                <div class="h3 text-warning" id="resumo_total_bahais">{{ estatisticas.total_participantes_bahais }}</div>
+                                <small class="text-muted"><strong>Total</strong></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dicas e Botões -->
+                <div class="tips-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6><i class="fas fa-lightbulb"></i> Dicas Importantes:</h6>
+                            <ul class="mb-0">
+                                <li>Mantenha estes dados sempre atualizados para melhor acompanhamento</li>
+                                <li>Os participantes Bahá'ís devem ser um subconjunto dos participantes totais</li>
+                                <li>O sistema mostrará comparativos com os dados registrados no banco</li>
+                                <li>Use dados reais da sua comunidade para maior precisão</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-chart-line fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões -->
+                <div class="text-center mt-4">
+                    <div class="btn-group-lg" role="group">
+                        <button type="button" class="btn btn-warning me-2" onclick="calcularTotaisInline()">
+                            <i class="fas fa-calculator"></i> Calcular Totais das Atividades
+                        </button>
+                        <a href="{% url 'contact:dashboard_estatisticas' %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-gradient">
+                            <i class="fas fa-save"></i> Salvar Estatísticas
+                        </button>
+                    </div>
+                    <div class="text-muted mt-2">
+                        <small><i class="fas fa-info-circle"></i> Use "Calcular Totais" para somar automaticamente os participantes individuais</small>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Dados do banco de dados para auto-preenchimento
+    const dadosBanco = {
+        grupos_prejovens: {{ estatisticas_bd.grupos_prejovens|default:0 }},
+        participantes_prejovens: {{ estatisticas_bd.participantes_prejovens|default:0 }},
+        aulas_criancas: {{ estatisticas_bd.aulas_criancas|default:0 }},
+        participantes_criancas: {{ estatisticas_bd.participantes_criancas|default:0 }},
+        circulos_estudo: {{ estatisticas_bd.circulos_estudo|default:0 }},
+        participantes_circulos: {{ estatisticas_bd.participantes_circulos|default:0 }}
+    };
+
+    // Auto-preenchimento
+    document.getElementById('autoFillBtn').addEventListener('click', function() {
+        if (confirm('Isso irá substituir os valores atuais pelos dados do banco de dados. Continuar?')) {
+            document.getElementById('total_grupos_prejovens').value = dadosBanco.grupos_prejovens;
+            document.getElementById('participantes_prejovens').value = dadosBanco.participantes_prejovens;
+            document.getElementById('total_aulas_criancas').value = dadosBanco.aulas_criancas;
+            document.getElementById('participantes_criancas').value = dadosBanco.participantes_criancas;
+            document.getElementById('total_circulos_estudo').value = dadosBanco.circulos_estudo;
+            document.getElementById('participantes_circulos').value = dadosBanco.participantes_circulos;
+            
+            // Atualizar resumos
+            updateSummaries();
+            
+            // Mostrar feedback
+            this.innerHTML = '<i class="fas fa-check"></i> Preenchido!';
+            this.classList.remove('btn-success');
+            this.classList.add('btn-info');
+            
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-magic"></i> Preencher Automaticamente';
+                this.classList.remove('btn-info');
+                this.classList.add('btn-success');
+            }, 2000);
+        }
+    });
+
+    // Função para atualizar resumos em tempo real
+    function updateSummaries() {
+        // Participantes das atividades
+        const prejovens = parseInt(document.getElementById('participantes_prejovens').value) || 0;
+        const criancas = parseInt(document.getElementById('participantes_criancas').value) || 0;
+        const circulos = parseInt(document.getElementById('participantes_circulos').value) || 0;
+        const totalParticipantes = prejovens + criancas + circulos;
+
+        document.getElementById('resumo_prejovens').textContent = prejovens;
+        document.getElementById('resumo_criancas_atividade').textContent = criancas;
+        document.getElementById('resumo_circulos').textContent = circulos;
+        document.getElementById('resumo_total_participantes').textContent = totalParticipantes;
+
+        // Demografia
+        const criancasDemo = parseInt(document.getElementById('total_criancas').value) || 0;
+        const jovens = parseInt(document.getElementById('total_jovens').value) || 0;
+        const adultos = parseInt(document.getElementById('total_adultos').value) || 0;
+        const totalDemografico = criancasDemo + jovens + adultos;
+
+        document.getElementById('resumo_criancas_demo').textContent = criancasDemo;
+        document.getElementById('resumo_jovens').textContent = jovens;
+        document.getElementById('resumo_adultos').textContent = adultos;
+        document.getElementById('resumo_total_demografico').textContent = totalDemografico;
+
+        // Participantes Bahá'ís
+        const bahaisPrejovens = parseInt(document.getElementById('participantes_prejovens_bahais').value) || 0;
+        const bahaisCriancas = parseInt(document.getElementById('participantes_criancas_bahais').value) || 0;
+        const bahaisCirculos = parseInt(document.getElementById('participantes_circulos_bahais').value) || 0;
+        const totalBahais = bahaisPrejovens + bahaisCriancas + bahaisCirculos;
+
+        document.getElementById('resumo_bahais_prejovens').textContent = bahaisPrejovens;
+        document.getElementById('resumo_bahais_criancas').textContent = bahaisCriancas;
+        document.getElementById('resumo_bahais_circulos').textContent = bahaisCirculos;
+        document.getElementById('resumo_total_bahais').textContent = totalBahais;
+    }
+
+    // Adicionar event listeners para todos os campos numericos
+    const numericos = [
+        'total_grupos_prejovens', 'participantes_prejovens', 'participantes_prejovens_bahais',
+        'total_aulas_criancas', 'participantes_criancas', 'participantes_criancas_bahais',
+        'total_circulos_estudo', 'participantes_circulos', 'participantes_circulos_bahais',
+        'total_criancas', 'total_jovens', 'total_adultos'
+    ];
+
+    numericos.forEach(function(id) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', updateSummaries);
+            
+            // Adicionar efeito visual quando o campo muda
+            element.addEventListener('focus', function() {
+                this.style.borderColor = '#007bff';
+                this.style.boxShadow = '0 0 0 0.2rem rgba(0, 123, 255, 0.25)';
+            });
+            
+            element.addEventListener('blur', function() {
+                this.style.borderColor = '';
+                this.style.boxShadow = '';
+            });
+        }
+    });
+
+    // Validação: Bahá'ís não podem ser maiores que participantes totais
+    function validateBahais() {
+        const prejovensTotal = parseInt(document.getElementById('participantes_prejovens').value) || 0;
+        const prejovensInput = document.getElementById('participantes_prejovens_bahais');
+        const prejovensVal = parseInt(prejovensInput.value) || 0;
+        
+        if (prejovensVal > prejovensTotal) {
+            prejovensInput.setCustomValidity('Bahá\'ís não podem ser mais que participantes totais');
+            prejovensInput.style.borderColor = '#dc3545';
+        } else {
+            prejovensInput.setCustomValidity('');
+            prejovensInput.style.borderColor = '';
+        }
+
+        const criancasTotal = parseInt(document.getElementById('participantes_criancas').value) || 0;
+        const criancasInput = document.getElementById('participantes_criancas_bahais');
+        const criancasVal = parseInt(criancasInput.value) || 0;
+        
+        if (criancasVal > criancasTotal) {
+            criancasInput.setCustomValidity('Bahá\'ís não podem ser mais que participantes totais');
+            criancasInput.style.borderColor = '#dc3545';
+        } else {
+            criancasInput.setCustomValidity('');
+            criancasInput.style.borderColor = '';
+        }
+
+        const circulosTotal = parseInt(document.getElementById('participantes_circulos').value) || 0;
+        const circulosInput = document.getElementById('participantes_circulos_bahais');
+        const circulosVal = parseInt(circulosInput.value) || 0;
+        
+        if (circulosVal > circulosTotal) {
+            circulosInput.setCustomValidity('Bahá\'ís não podem ser mais que participantes totais');
+            circulosInput.style.borderColor = '#dc3545';
+        } else {
+            circulosInput.setCustomValidity('');
+            circulosInput.style.borderColor = '';
+        }
+    }
+
+    // Adicionar validação
+    ['participantes_prejovens', 'participantes_prejovens_bahais',
+     'participantes_criancas', 'participantes_criancas_bahais',
+     'participantes_circulos', 'participantes_circulos_bahais'].forEach(function(id) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('blur', validateBahais);
+            element.addEventListener('input', validateBahais);
+        }
+    });
+
+    // Inicializar resumos
+    updateSummaries();
+
+    // Função para sincronizar detalhamento com totais
+    window.calcularDetalhamento = function() {
+        // Sincronizar totais com os campos principais
+        document.getElementById('detalhes_prejovens_grupos').value = document.getElementById('total_grupos_prejovens').value;
+        document.getElementById('detalhes_criancas_aulas').value = document.getElementById('total_aulas_criancas').value;
+        document.getElementById('detalhes_circulos_ativos').value = document.getElementById('total_circulos_estudo').value;
+        document.getElementById('detalhes_devocionais_reunioes').value = document.getElementById('total_reunioes_devocionais').value;
+        document.getElementById('detalhes_devocionais_participantes_total').value = document.getElementById('participantes_devocionais').value;
+        document.getElementById('detalhes_devocionais_participantes_bahais').value = document.getElementById('participantes_devocionais_bahais').value;
+        
+        // Mostrar feedback
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+        alert.innerHTML = `
+            <strong>🔗 Sincronizado!</strong> 
+            Os campos do detalhamento foram sincronizados com os totais principais.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.form-section').prepend(alert);
+    };
+
+    // Função para calcular totais baseados na edição inline
+    window.calcularTotaisInline = function() {
+        let alert_msgs = [];
+        
+        // Calcular total de pré-jovens
+        let totalPrejovens = 0;
+        document.querySelectorAll('input[name^="prejovens_"][name$="_participantes"]').forEach(input => {
+            totalPrejovens += parseInt(input.value) || 0;
+        });
+        if (totalPrejovens > 0) {
+            document.getElementById('participantes_prejovens').value = totalPrejovens;
+            document.getElementById('total_grupos_prejovens').value = document.querySelectorAll('input[name^="prejovens_"]').length;
+            alert_msgs.push(`👥 Pré-jovens: ${totalPrejovens} participantes`);
+        }
+        
+        // Calcular total de crianças
+        let totalCriancas = 0;
+        document.querySelectorAll('input[name^="aula_"][name$="_participantes"]').forEach(input => {
+            totalCriancas += parseInt(input.value) || 0;
+        });
+        if (totalCriancas > 0) {
+            document.getElementById('participantes_criancas').value = totalCriancas;
+            document.getElementById('total_aulas_criancas').value = document.querySelectorAll('input[name^="aula_"]').length;
+            alert_msgs.push(`🎨 Crianças: ${totalCriancas} participantes`);
+        }
+        
+        // Calcular total de círculos
+        let totalCirculos = 0;
+        document.querySelectorAll('input[name^="circulo_"][name$="_participantes"]').forEach(input => {
+            totalCirculos += parseInt(input.value) || 0;
+        });
+        if (totalCirculos > 0) {
+            document.getElementById('participantes_circulos').value = totalCirculos;
+            document.getElementById('total_circulos_estudo').value = document.querySelectorAll('input[name^="circulo_"]').length;
+            alert_msgs.push(`📚 Círculos: ${totalCirculos} participantes`);
+        }
+        
+        // Calcular total de reuniões devocionais
+        let totalDevocionais = 0;
+        document.querySelectorAll('input[name^="reuniao_"][name$="_participantes"]').forEach(input => {
+            totalDevocionais += parseInt(input.value) || 0;
+        });
+        if (totalDevocionais > 0) {
+            document.getElementById('participantes_devocionais').value = totalDevocionais;
+            document.getElementById('total_reunioes_devocionais').value = document.querySelectorAll('input[name^="reuniao_"]').length;
+            alert_msgs.push(`🕯️ Devocionais: ${totalDevocionais} participantes`);
+        }
+        
+        // Atualizar resumos
+        updateSummaries();
+        
+        // Mostrar resultado
+        if (alert_msgs.length > 0) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+            alert.innerHTML = `
+                <strong>🧮 Totais Calculados!</strong><br>
+                ${alert_msgs.join('<br>')}
+                <br><small class="text-muted">Agora você pode ajustar os números Bahá'ís manualmente</small>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.form-section').prepend(alert);
+            
+            // Scroll para o topo para ver o alerta
+            document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+        } else {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-info alert-dismissible fade show mt-3';
+            alert.innerHTML = `
+                <strong>ℹ️ Nenhum dado encontrado</strong> 
+                Preencha os campos individuais das atividades primeiro.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.form-section').prepend(alert);
+        }
+    };
+
+    // Efeito de sucesso no botão salvar
+    const form = document.getElementById('statisticsForm');
+    if (form) {
+        form.addEventListener('submit', function() {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+                submitBtn.disabled = true;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,4 @@
+Django==5.2.7
+django-select2
+django-autocomplete-light
+Faker

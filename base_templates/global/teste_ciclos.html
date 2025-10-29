@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Ciclos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .alert { padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .alert-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Seleção de Ciclos</h1>
+    
+    <div class="alert alert-info">
+        <strong>Instruções:</strong> Selecione um plano para ver os ciclos disponíveis. 
+        O JavaScript deve carregar automaticamente as opções de ciclo.
+    </div>
+
+    <form>
+        <div class="form-group">
+            <label for="id_plano_ciclo">Plano de Ciclos:</label>
+            <select id="id_plano_ciclo" name="plano_ciclo">
+                <option value="">Selecione um plano</option>
+                <option value="1">Plano Principal 2024-2025</option>
+                <option value="2">Plano Teste</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="id_numero_ciclo_criacao">Ciclo de Criação:</label>
+            <select id="id_numero_ciclo_criacao" name="numero_ciclo_criacao" disabled>
+                <option value="">Selecione um plano primeiro</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="nome">Nome (teste):</label>
+            <input type="text" id="nome" name="nome" value="Teste de Atividade">
+        </div>
+
+        <button type="button" onclick="testarFormulario()">Testar Formulário</button>
+    </form>
+
+    <div id="resultados" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px; display: none;">
+        <h3>Resultados do Teste:</h3>
+        <div id="resultado-plano"></div>
+        <div id="resultado-ciclo"></div>
+    </div>
+
+    <script>
+        function testarFormulario() {
+            const plano = document.getElementById('id_plano_ciclo').value;
+            const ciclo = document.getElementById('id_numero_ciclo_criacao').value;
+            
+            document.getElementById('resultado-plano').innerHTML = '<strong>Plano selecionado:</strong> ' + (plano || 'Nenhum');
+            document.getElementById('resultado-ciclo').innerHTML = '<strong>Ciclo selecionado:</strong> ' + (ciclo || 'Nenhum');
+            document.getElementById('resultados').style.display = 'block';
+        }
+    </script>
+
+    <!-- Carregar o JavaScript de seleção de ciclos -->
+    <script src="/static/global/js/cycle-selector.js"></script>
+
+</body>
+</html>

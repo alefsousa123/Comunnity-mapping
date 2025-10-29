@@ -1,0 +1,379 @@
+{% extends 'global/base.html' %}
+
+{% block title %}Configurações de Estatísticas{% endblock %}
+
+{% block content %}
+<style>
+    .config-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .config-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .config-header {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        color: white;
+        border-radius: 20px 20px 0 0;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .config-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="a" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(255,255,255,.1)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient></defs><rect width="100" height="20" fill="url(%23a)"/></svg>');
+        opacity: 0.5;
+    }
+    
+    .form-section {
+        background: linear-gradient(145deg, #f8f9fa, #ffffff);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .form-section:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: #007bff;
+    }
+    
+    .section-title {
+        color: #007bff;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-control {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.8);
+    }
+    
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        background: white;
+    }
+    
+    .cycle-preview {
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .cycle-card {
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .cycle-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .cycle-1 { border-color: #007bff; background: linear-gradient(135deg, #cce5ff, #e6f3ff); }
+    .cycle-2 { border-color: #28a745; background: linear-gradient(135deg, #d4edda, #f0f8f4); }
+    .cycle-3 { border-color: #17a2b8; background: linear-gradient(135deg, #d1ecf1, #e8f7f9); }
+    .cycle-4 { border-color: #ffc107; background: linear-gradient(135deg, #fff3cd, #fffbee); }
+    
+    .btn-gradient {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        border: none;
+        border-radius: 25px;
+        padding: 0.75rem 2rem;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+        color: white;
+    }
+    
+    .info-alert {
+        background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+        border: 1px solid #17a2b8;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .input-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+</style>
+
+<div class="config-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-10">
+                <div class="config-card">
+                    <div class="config-header">
+                        <h1 class="mb-2">⚙️ Configurações de Estatísticas</h1>
+                        <p class="mb-0 lead">Configure os ciclos e períodos do seu plano de crescimento</p>
+                        <div class="mt-3">
+                            <a href="{% url 'contact:dashboard_estatisticas' %}" class="btn btn-light btn-lg">
+                                <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4">
+                        <form method="post" id="configForm">
+                            {% csrf_token %}
+                        
+                            <!-- Configurações Gerais -->
+                            <div class="form-section">
+                                <h6 class="section-title">
+                                    <i class="fas fa-cogs"></i> Configurações Gerais
+                                </h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="titulo_plano" class="form-label fw-bold">Título do Plano</label>
+                                        <input type="text" class="form-control form-control-lg" id="titulo_plano" name="titulo_plano" 
+                                               value="{{ configuracao.titulo_plano }}" required>
+                                        <div class="form-text">Ex: Plano de 9 Anos, Plano de 5 Anos, etc.</div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="data_inicio_contagem" class="form-label fw-bold">Data de Início da Contagem</label>
+                                        <input type="date" class="form-control form-control-lg" id="data_inicio_contagem" name="data_inicio_contagem" 
+                                               value="{{ configuracao.data_inicio_contagem|date:'Y-m-d' }}" required>
+                                        <div class="form-text">Data a partir da qual as estatísticas começam a ser contabilizadas.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Configuração dos Ciclos -->
+                            <div class="form-section">
+                                <h6 class="section-title">
+                                    <i class="fas fa-calendar-alt"></i> Configuração dos Ciclos
+                                </h6>
+                                
+                                <div class="info-alert">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <strong><i class="fas fa-info-circle"></i> Instruções:</strong><br>
+                                            <small>
+                                                • Use o formato MM-DD (Ex: 01-21 para 21 de Janeiro)<br>
+                                                • O Ciclo 4 pode atravessar o ano (Ex: 21/Out até 20/Jan do ano seguinte)<br>
+                                                • As datas são aplicadas anualmente de forma automática
+                                            </small>
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            <i class="fas fa-calendar fa-3x text-info"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Ciclos organizados em grid -->
+                                <div class="row">
+                                    <!-- Ciclo 1 -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="cycle-card cycle-1 p-3">
+                                            <h6 class="text-primary mb-3">🔵 Ciclo 1</h6>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <label for="ciclo1_inicio" class="form-label fw-bold">Início</label>
+                                                    <input type="text" class="form-control" id="ciclo1_inicio" name="ciclo1_inicio" 
+                                                           value="{{ configuracao.ciclo1_inicio }}" pattern="[0-9]{2}-[0-9]{2}" 
+                                                           placeholder="01-21" required>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label for="ciclo1_fim" class="form-label fw-bold">Fim</label>
+                                                    <input type="text" class="form-control" id="ciclo1_fim" name="ciclo1_fim" 
+                                                           value="{{ configuracao.ciclo1_fim }}" pattern="[0-9]{2}-[0-9]{2}" 
+                                                           placeholder="04-20" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Ciclo 2 -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="cycle-card cycle-2 p-3">
+                                            <h6 class="text-success mb-3">🟢 Ciclo 2</h6>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <label for="ciclo2_inicio" class="form-label fw-bold">Início</label>
+                                                    <input type="text" class="form-control" id="ciclo2_inicio" name="ciclo2_inicio" 
+                                                           value="{{ configuracao.ciclo2_inicio }}" pattern="[0-9]{2}-[0-9]{2}" 
+                                                           placeholder="04-21" required>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label for="ciclo2_fim" class="form-label fw-bold">Fim</label>
+                                                    <input type="text" class="form-control" id="ciclo2_fim" name="ciclo2_fim" 
+                                                           value="{{ configuracao.ciclo2_fim }}" pattern="[0-9]{2}-[0-9]{2}" 
+                                                           placeholder="07-20" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Ciclo 3 -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="cycle-card cycle-3 p-3">
+                                            <h6 class="text-info mb-3">🔵 Ciclo 3</h6>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <label for="ciclo3_inicio" class="form-label fw-bold">Início</label>
+                                                    <input type="text" class="form-control" id="ciclo3_inicio" name="ciclo3_inicio" 
+                                                           value="{{ configuracao.ciclo3_inicio }}" pattern="[0-9]{2}-[0-9]{2}" 
+                                                           placeholder="07-21" required>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label for="ciclo3_fim" class="form-label fw-bold">Fim</label>
+                                                    <input type="text" class="form-control" id="ciclo3_fim" name="ciclo3_fim" 
+                                                           value="{{ configuracao.ciclo3_fim }}" pattern="[0-9]{2}-[0-9]{2}" 
+                                                           placeholder="10-20" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Ciclo 4 -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="cycle-card cycle-4 p-3">
+                                            <h6 class="text-warning mb-3">🟡 Ciclo 4</h6>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <label for="ciclo4_inicio" class="form-label fw-bold">Início</label>
+                                                    <input type="text" class="form-control" id="ciclo4_inicio" name="ciclo4_inicio" 
+                                                           value="{{ configuracao.ciclo4_inicio }}" pattern="[0-9]{2}-[0-9]{2}" 
+                                                           placeholder="10-21" required>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label for="ciclo4_fim" class="form-label fw-bold">Fim</label>
+                                                    <input type="text" class="form-control" id="ciclo4_fim" name="ciclo4_fim" 
+                                                           value="{{ configuracao.ciclo4_fim }}" pattern="[0-9]{2}-[0-9]{2}" 
+                                                           placeholder="01-20" required>
+                                                    <div class="form-text small">Este ciclo atravessa o ano</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Visualização dos Períodos -->
+                            <div class="cycle-preview">
+                                <h6 class="section-title">
+                                    <i class="fas fa-eye"></i> Visualização dos Períodos (Ano Atual)
+                                </h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 col-lg-3 mb-3">
+                                        <div class="cycle-card cycle-1 p-3 text-center">
+                                            <strong class="text-primary">🔵 Ciclo 1</strong><br>
+                                            <small id="preview_ciclo1" class="fw-bold">{{ configuracao.ciclo1_inicio }} a {{ configuracao.ciclo1_fim }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-3 mb-3">
+                                        <div class="cycle-card cycle-2 p-3 text-center">
+                                            <strong class="text-success">🟢 Ciclo 2</strong><br>
+                                            <small id="preview_ciclo2" class="fw-bold">{{ configuracao.ciclo2_inicio }} a {{ configuracao.ciclo2_fim }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-3 mb-3">
+                                        <div class="cycle-card cycle-3 p-3 text-center">
+                                            <strong class="text-info">🔵 Ciclo 3</strong><br>
+                                            <small id="preview_ciclo3" class="fw-bold">{{ configuracao.ciclo3_inicio }} a {{ configuracao.ciclo3_fim }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-3 mb-3">
+                                        <div class="cycle-card cycle-4 p-3 text-center">
+                                            <strong class="text-warning">🟡 Ciclo 4</strong><br>
+                                            <small id="preview_ciclo4" class="fw-bold">{{ configuracao.ciclo4_inicio }} a {{ configuracao.ciclo4_fim }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Botões -->
+                            <div class="text-center mt-4">
+                                <a href="{% url 'contact:dashboard_estatisticas' %}" class="btn btn-outline-secondary btn-lg me-3">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </a>
+                                <button type="submit" class="btn-gradient btn-lg">
+                                    <i class="fas fa-save"></i> Salvar Configurações
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Função para atualizar previews em tempo real
+    function updatePreviews() {
+        document.getElementById('preview_ciclo1').textContent = 
+            document.getElementById('ciclo1_inicio').value + ' a ' + document.getElementById('ciclo1_fim').value;
+        document.getElementById('preview_ciclo2').textContent = 
+            document.getElementById('ciclo2_inicio').value + ' a ' + document.getElementById('ciclo2_fim').value;
+        document.getElementById('preview_ciclo3').textContent = 
+            document.getElementById('ciclo3_inicio').value + ' a ' + document.getElementById('ciclo3_fim').value;
+        document.getElementById('preview_ciclo4').textContent = 
+            document.getElementById('ciclo4_inicio').value + ' a ' + document.getElementById('ciclo4_fim').value;
+    }
+
+    // Adicionar event listeners para todos os campos de ciclo
+    ['ciclo1_inicio', 'ciclo1_fim', 'ciclo2_inicio', 'ciclo2_fim', 
+     'ciclo3_inicio', 'ciclo3_fim', 'ciclo4_inicio', 'ciclo4_fim'].forEach(function(id) {
+        document.getElementById(id).addEventListener('input', updatePreviews);
+    });
+
+    // Validação do formato MM-DD
+    function validateDateFormat(input) {
+        const pattern = /^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+        if (!pattern.test(input.value) && input.value !== '') {
+            input.setCustomValidity('Use o formato MM-DD (ex: 01-21)');
+        } else {
+            input.setCustomValidity('');
+        }
+    }
+
+    // Adicionar validação para todos os campos de data
+    ['ciclo1_inicio', 'ciclo1_fim', 'ciclo2_inicio', 'ciclo2_fim', 
+     'ciclo3_inicio', 'ciclo3_fim', 'ciclo4_inicio', 'ciclo4_fim'].forEach(function(id) {
+        const element = document.getElementById(id);
+        element.addEventListener('blur', function() { validateDateFormat(this); });
+        element.addEventListener('input', function() { validateDateFormat(this); });
+    });
+});
+</script>
+{% endblock %}

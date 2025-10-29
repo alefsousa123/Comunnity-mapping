@@ -1,0 +1,726 @@
+{% extends 'global/base.html' %}
+
+{% block title %}{% if created %}Criar{% else %}Editar{% endif %} Histórico - Ciclo {{ numero_ciclo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px; background: linear-gradient(135deg, {% if created %}#28a745{% else %}#ffc107{% endif %} 0%, {% if created %}#20c997{% else %}#fd7e14{% endif %} 100%);">
+                <div class="card-body text-white text-center py-4">
+                    <h2 class="mb-2">
+                        {% if created %}
+                            ➕ Criar Histórico - Ciclo {{ numero_ciclo }}
+                        {% else %}
+                            ✏️ Editar Histórico - Ciclo {{ numero_ciclo }}
+                        {% endif %}
+                    </h2>
+                    <p class="mb-0 opacity-75">{{ inicio_ciclo|date:"d/m/Y" }} - {{ fim_ciclo|date:"d/m/Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" id="formHistorico">
+        {% csrf_token %}
+        
+        <div class="row">
+            <!-- Atividades Comunitárias -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                    <div class="card-header bg-primary text-white" style="border-radius: 12px 12px 0 0;">
+                        <h5 class="mb-0">🏛️ Atividades Comunitárias</h5>
+                        <small class="opacity-75">Número de atividades no final do ciclo</small>
+                    </div>
+                    <div class="card-body">
+                        <!-- Círculos de Estudo -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-book text-info"></i> Círculos de Estudo
+                            </label>
+                            <input type="number" name="total_circulos_estudo" 
+                                   value="{{ historico.total_circulos_estudo }}" 
+                                   class="form-control atividade-input" min="0" onchange="calcularTotais()">
+                        </div>
+
+                        <!-- Grupos de Pré-jovens -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-users text-warning"></i> Grupos de Pré-jovens
+                            </label>
+                            <input type="number" name="total_grupos_prejovens" 
+                                   value="{{ historico.total_grupos_prejovens }}" 
+                                   class="form-control atividade-input" min="0" onchange="calcularTotais()">
+                        </div>
+
+                        <!-- Aulas de Crianças -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-child text-success"></i> Aulas de Crianças
+                            </label>
+                            <input type="number" name="total_aulas_criancas" 
+                                   value="{{ historico.total_aulas_criancas }}" 
+                                   class="form-control atividade-input" min="0" onchange="calcularTotais()">
+                        </div>
+
+                        <!-- Reuniões Devocionais -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-praying-hands text-secondary"></i> Reuniões Devocionais
+                            </label>
+                            <input type="number" name="total_reunioes_devocionais" 
+                                   value="{{ historico.total_reunioes_devocionais }}" 
+                                   class="form-control atividade-input" min="0" onchange="calcularTotais()">
+                        </div>
+
+                        <!-- Grupos de Famílias -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-home text-primary"></i> Grupos de Famílias
+                            </label>
+                            <input type="number" name="total_grupos_familias" 
+                                   value="{{ historico.total_grupos_familias }}" 
+                                   class="form-control atividade-input" min="0" onchange="calcularTotais()">
+                        </div>
+
+                        <!-- Total de Atividades -->
+                        <div class="alert alert-primary mt-3">
+                            <strong>Total de Atividades: <span id="totalAtividades">0</span></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participantes -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                    <div class="card-header bg-success text-white" style="border-radius: 12px 12px 0 0;">
+                        <h5 class="mb-0">👥 Participantes</h5>
+                        <small class="opacity-75">Número de participantes no final do ciclo</small>
+                    </div>
+                    <div class="card-body">
+                        <!-- Participantes Círculos -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-book text-info"></i> Participantes - Círculos
+                            </label>
+                            <input type="number" name="participantes_circulos" 
+                                   value="{{ historico.participantes_circulos }}" 
+                                   class="form-control participante-input" min="0" onchange="calcularTotais()">
+                        </div>
+
+                        <!-- Participantes Pré-jovens -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-users text-warning"></i> Participantes - Pré-jovens
+                            </label>
+                            <input type="number" name="participantes_prejovens" 
+                                   value="{{ historico.participantes_prejovens }}" 
+                                   class="form-control participante-input" min="0" onchange="calcularTotais()">
+                        </div>
+
+                        <!-- Participantes Crianças -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-child text-success"></i> Participantes - Crianças
+                            </label>
+                            <input type="number" name="participantes_criancas" 
+                                   value="{{ historico.participantes_criancas }}" 
+                                   class="form-control participante-input" min="0" onchange="calcularTotais()">
+                        </div>
+
+                        <!-- Participantes Devocionais -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-praying-hands text-secondary"></i> Participantes - Devocionais
+                            </label>
+                            <input type="number" name="participantes_devocionais" 
+                                   value="{{ historico.participantes_devocionais }}" 
+                                   class="form-control participante-input" min="0" onchange="calcularTotais()">
+                        </div>
+
+                        <!-- Participantes Famílias -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-home text-primary"></i> Participantes - Famílias
+                            </label>
+                            <input type="number" name="participantes_grupos_familias" 
+                                   value="{{ historico.participantes_grupos_familias }}" 
+                                   class="form-control participante-input" min="0" onchange="calcularTotais()">
+                        </div>
+
+                        <!-- Total de Participantes -->
+                        <div class="alert alert-success mt-3">
+                            <strong>Total de Participantes: <span id="totalParticipantes">0</span></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Participantes Bahá'ís -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                    <div class="card-header bg-warning text-dark" style="border-radius: 12px 12px 0 0;">
+                        <h5 class="mb-0">🕯️ Participantes Bahá'ís</h5>
+                        <small class="opacity-75">Número de participantes bahá'ís no final do ciclo</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Bahá'ís Círculos -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-book text-info"></i> Bahá'ís - Círculos de Estudo
+                                </label>
+                                <input type="number" name="participantes_circulos_bahais" 
+                                       value="{{ historico.participantes_circulos_bahais }}" 
+                                       class="form-control bahai-input" min="0" onchange="calcularTotaisBahais()">
+                            </div>
+
+                            <!-- Bahá'ís Pré-jovens -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-users text-warning"></i> Bahá'ís - Grupos de Pré-jovens
+                                </label>
+                                <input type="number" name="participantes_prejovens_bahais" 
+                                       value="{{ historico.participantes_prejovens_bahais }}" 
+                                       class="form-control bahai-input" min="0" onchange="calcularTotaisBahais()">
+                            </div>
+
+                            <!-- Bahá'ís Crianças -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-child text-success"></i> Bahá'ís - Aulas de Crianças
+                                </label>
+                                <input type="number" name="participantes_criancas_bahais" 
+                                       value="{{ historico.participantes_criancas_bahais }}" 
+                                       class="form-control bahai-input" min="0" onchange="calcularTotaisBahais()">
+                            </div>
+
+                            <!-- Bahá'ís Devocionais -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-praying-hands text-secondary"></i> Bahá'ís - Reuniões Devocionais
+                                </label>
+                                <input type="number" name="participantes_devocionais_bahais" 
+                                       value="{{ historico.participantes_devocionais_bahais }}" 
+                                       class="form-control bahai-input" min="0" onchange="calcularTotaisBahais()">
+                            </div>
+
+                            <!-- Bahá'ís Famílias -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-home text-primary"></i> Bahá'ís - Grupos de Famílias
+                                </label>
+                                <input type="number" name="participantes_grupos_familias_bahais" 
+                                       value="{{ historico.participantes_grupos_familias_bahais }}" 
+                                       class="form-control bahai-input" min="0" onchange="calcularTotaisBahais()">
+                            </div>
+
+                            <!-- Total de Bahá'ís -->
+                            <div class="col-md-6 mb-3">
+                                <div class="alert alert-warning mt-3">
+                                    <strong>🕯️ Total de Bahá'ís: <span id="totalBahais">0</span></strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dados de Livros -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                    <div class="card-header bg-info text-white" style="border-radius: 12px 12px 0 0;">
+                        <h5 class="mb-0">📚 Dados de Livros</h5>
+                        <small class="opacity-75">Estatísticas de estudos no final do ciclo</small>
+                    </div>
+                    <div class="card-body">
+                        <!-- Totais Gerais -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-book-open text-primary"></i> Total de Livros/Estudos
+                                </label>
+                                <input type="number" name="total_livros" 
+                                       value="{{ historico.total_livros }}" 
+                                       class="form-control" min="0" onchange="calcularTotais()">
+                                <small class="text-muted">Total geral de estudos registrados</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-play text-success"></i> Total - Livros Iniciados no Ciclo
+                                </label>
+                                <input type="number" name="livros_iniciados" 
+                                       value="{{ historico.livros_iniciados }}" 
+                                       class="form-control" min="0" readonly>
+                                <small class="text-muted">Soma automática por categoria</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-check text-warning"></i> Total - Livros Concluídos no Ciclo
+                                </label>
+                                <input type="number" name="livros_concluidos" 
+                                       value="{{ historico.livros_concluidos }}" 
+                                       class="form-control" min="0" readonly>
+                                <small class="text-muted">Soma automática por categoria</small>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Detalhamento por Categoria -->
+                        <h6 class="mb-3 text-info">📊 Detalhamento por Categoria</h6>
+                        
+                        <!-- Sequência (Ruhi) -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <strong class="text-primary">📘 Sequência (Ruhi)</strong>
+                                <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="adicionarLivro('Sequência')">
+                                    <i class="fas fa-plus"></i> Livro
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Iniciados no Ciclo</label>
+                                <input type="number" name="livros_sequencia_iniciados" 
+                                       value="{{ historico.livros_sequencia_iniciados }}" 
+                                       class="form-control livro-categoria-input" min="0" onchange="calcularTotaisLivros()" readonly>
+                                <small class="text-muted">Soma automática dos livros específicos</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Concluídos no Ciclo</label>
+                                <input type="number" name="livros_sequencia_concluidos" 
+                                       value="{{ historico.livros_sequencia_concluidos }}" 
+                                       class="form-control livro-categoria-input" min="0" onchange="calcularTotaisLivros()" readonly>
+                                <small class="text-muted">Soma automática dos livros específicos</small>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="button" class="btn btn-sm btn-outline-info" onclick="mostrarLivrosCategoria('Sequência')">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="livros-Sequência" class="mb-3"></div>
+
+                        <!-- ABC (Aulas de Crianças) -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <strong class="text-success">🎨 ABC (Aulas de Crianças)</strong>
+                                <button type="button" class="btn btn-sm btn-outline-success ms-2" onclick="adicionarLivro('ABC')">
+                                    <i class="fas fa-plus"></i> Livro
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" name="livros_abc_iniciados" 
+                                       value="{{ historico.livros_abc_iniciados }}" 
+                                       class="form-control livro-categoria-input" min="0" onchange="calcularTotaisLivros()" readonly>
+                                <small class="text-muted">Soma automática dos livros específicos</small>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" name="livros_abc_concluidos" 
+                                       value="{{ historico.livros_abc_concluidos }}" 
+                                       class="form-control livro-categoria-input" min="0" onchange="calcularTotaisLivros()" readonly>
+                                <small class="text-muted">Soma automática dos livros específicos</small>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="button" class="btn btn-sm btn-outline-info" onclick="mostrarLivrosCategoria('ABC')">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="livros-ABC" class="mb-3"></div>
+
+                        <!-- Pré-jovens -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <strong class="text-warning">🌟 Pré-jovens</strong>
+                                <button type="button" class="btn btn-sm btn-outline-warning ms-2" onclick="adicionarLivro('Pré-jovens')">
+                                    <i class="fas fa-plus"></i> Livro
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" name="livros_prejovens_iniciados" 
+                                       value="{{ historico.livros_prejovens_iniciados }}" 
+                                       class="form-control livro-categoria-input" min="0" onchange="calcularTotaisLivros()" readonly>
+                                <small class="text-muted">Soma automática dos livros específicos</small>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" name="livros_prejovens_concluidos" 
+                                       value="{{ historico.livros_prejovens_concluidos }}" 
+                                       class="form-control livro-categoria-input" min="0" onchange="calcularTotaisLivros()" readonly>
+                                <small class="text-muted">Soma automática dos livros específicos</small>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="button" class="btn btn-sm btn-outline-info" onclick="mostrarLivrosCategoria('Pré-jovens')">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="livros-Pré-jovens" class="mb-3"></div>
+
+                        <!-- Outros -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <strong class="text-secondary">📖 Outros</strong>
+                                <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="adicionarLivro('Outros')">
+                                    <i class="fas fa-plus"></i> Livro
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" name="livros_outros_iniciados" 
+                                       value="{{ historico.livros_outros_iniciados }}" 
+                                       class="form-control livro-categoria-input" min="0" onchange="calcularTotaisLivros()" readonly>
+                                <small class="text-muted">Soma automática dos livros específicos</small>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" name="livros_outros_concluidos" 
+                                       value="{{ historico.livros_outros_concluidos }}" 
+                                       class="form-control livro-categoria-input" min="0" onchange="calcularTotaisLivros()" readonly>
+                                <small class="text-muted">Soma automática dos livros específicos</small>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="button" class="btn btn-sm btn-outline-info" onclick="mostrarLivrosCategoria('Outros')">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="livros-Outros" class="mb-3"></div>
+
+                        <!-- Resumo -->
+                        <div class="alert alert-info mt-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Total Iniciados: <span id="totalLivrosIniciados">0</span></strong>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Total Concluídos: <span id="totalLivrosConcluidos">0</span></strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="row">
+            <div class="col-12 text-center">
+                <a href="{% url 'contact:gerenciar_historico' %}" class="btn btn-secondary me-3">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                <button type="submit" class="btn btn-{% if created %}success{% else %}warning{% endif %} btn-lg">
+                    <i class="fas fa-{% if created %}plus{% else %}save{% endif %}"></i> 
+                    {% if created %}Criar Histórico{% else %}Salvar Alterações{% endif %}
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+function calcularTotais() {
+    // Calcular total de atividades
+    let totalAtividades = 0;
+    document.querySelectorAll('.atividade-input').forEach(input => {
+        totalAtividades += parseInt(input.value) || 0;
+    });
+    document.getElementById('totalAtividades').textContent = totalAtividades;
+    
+    // Calcular total de participantes
+    let totalParticipantes = 0;
+    document.querySelectorAll('.participante-input').forEach(input => {
+        totalParticipantes += parseInt(input.value) || 0;
+    });
+    document.getElementById('totalParticipantes').textContent = totalParticipantes;
+}
+
+function calcularTotaisBahais() {
+    // Calcular total de participantes bahá'ís
+    let totalBahais = 0;
+    document.querySelectorAll('.bahai-input').forEach(input => {
+        totalBahais += parseInt(input.value) || 0;
+    });
+    document.getElementById('totalBahais').textContent = totalBahais;
+}
+
+function calcularTotaisLivros() {
+    // Calcular totais de livros por categoria
+    let totalIniciados = 0;
+    let totalConcluidos = 0;
+    
+    // Mapear nomes de categoria
+    const categoriaMap = {
+        'Sequência': 'sequencia',
+        'ABC': 'abc',
+        'Pré-jovens': 'prejovens',
+        'Outros': 'outros'
+    };
+    
+    // Somar por categoria baseado nos livros específicos
+    ['Sequência', 'ABC', 'Pré-jovens', 'Outros'].forEach(categoria => {
+        let categoriaIniciados = 0;
+        let categoriaConcluidos = 0;
+        
+        // Somar todos os livros específicos desta categoria
+        const container = document.getElementById(`livros-${categoria}`);
+        if (container) {
+            const inputs = container.querySelectorAll('input');
+            inputs.forEach(input => {
+                if (input.name.includes('_iniciados')) {
+                    categoriaIniciados += parseInt(input.value) || 0;
+                } else if (input.name.includes('_concluidos')) {
+                    categoriaConcluidos += parseInt(input.value) || 0;
+                }
+            });
+        }
+        
+        // Atualizar campos de categoria
+        const categoriaBackend = categoriaMap[categoria] || categoria.toLowerCase();
+        const inputIniciados = document.querySelector(`input[name="livros_${categoriaBackend}_iniciados"]`);
+        const inputConcluidos = document.querySelector(`input[name="livros_${categoriaBackend}_concluidos"]`);
+        
+        if (inputIniciados) inputIniciados.value = categoriaIniciados;
+        if (inputConcluidos) inputConcluidos.value = categoriaConcluidos;
+        
+        totalIniciados += categoriaIniciados;
+        totalConcluidos += categoriaConcluidos;
+    });
+    
+    // Atualizar campos totais
+    document.querySelector('input[name="livros_iniciados"]').value = totalIniciados;
+    document.querySelector('input[name="livros_concluidos"]').value = totalConcluidos;
+    
+    // Atualizar resumo visual
+    document.getElementById('totalLivrosIniciados').textContent = totalIniciados;
+    document.getElementById('totalLivrosConcluidos').textContent = totalConcluidos;
+}
+
+let contadorLivros = 0;
+
+function adicionarLivro(categoria) {
+    contadorLivros++;
+    const container = document.getElementById(`livros-${categoria}`);
+    
+    // FORÇAR MAPEAMENTO CORRETO
+    let categoriaBackend;
+    switch(categoria) {
+        case 'Sequência':
+            categoriaBackend = 'sequencia';
+            break;
+        case 'ABC':
+            categoriaBackend = 'abc';
+            break;
+        case 'Pré-jovens':
+            categoriaBackend = 'prejovens';
+            break;
+        case 'Outros':
+            categoriaBackend = 'outros';
+            break;
+        default:
+            categoriaBackend = categoria.toLowerCase();
+    }
+    
+    const livroDiv = document.createElement('div');
+    livroDiv.className = 'row mb-2 align-items-center bg-light p-2 rounded';
+    livroDiv.id = `livro-${categoria}-${contadorLivros}`;
+    
+    const nomeField = `livro_${categoriaBackend}_${contadorLivros}_nome`;
+    
+    livroDiv.innerHTML = `
+        <div class="col-md-3">
+            <input type="text" name="${nomeField}" 
+                   class="form-control form-control-sm" placeholder="Ex: Livro 1, Série 2" required>
+        </div>
+        <div class="col-md-3">
+            <input type="number" name="livro_${categoriaBackend}_${contadorLivros}_iniciados" 
+                   class="form-control form-control-sm" min="0" placeholder="Iniciados" onchange="calcularTotaisLivros()">
+        </div>
+        <div class="col-md-3">
+            <input type="number" name="livro_${categoriaBackend}_${contadorLivros}_concluidos" 
+                   class="form-control form-control-sm" min="0" placeholder="Concluídos" onchange="calcularTotaisLivros()">
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="livro_${categoriaBackend}_${contadorLivros}_observacoes" 
+                   class="form-control form-control-sm" placeholder="Obs...">
+        </div>
+        <div class="col-md-1">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerLivro('livro-${categoria}-${contadorLivros}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    
+    container.appendChild(livroDiv);
+    
+    // Se é o primeiro livro da categoria, mostrar header
+    if (container.children.length === 1) {
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'row mb-2 fw-bold text-muted';
+        headerDiv.innerHTML = `
+            <div class="col-md-3">Nome do Livro</div>
+            <div class="col-md-3">Iniciados</div>
+            <div class="col-md-3">Concluídos</div>
+            <div class="col-md-2">Observações</div>
+            <div class="col-md-1">Ação</div>
+        `;
+        container.insertBefore(headerDiv, livroDiv);
+    }
+    
+    calcularTotaisLivros();
+}
+
+function removerLivro(livroId) {
+    const livro = document.getElementById(livroId);
+    const container = livro.parentElement;
+    livro.remove();
+    
+    // Se não há mais livros, remover header também
+    if (container.children.length === 1) {
+        container.firstElementChild.remove();
+    }
+    
+    calcularTotaisLivros();
+}
+
+function mostrarLivrosCategoria(categoria) {
+    const container = document.getElementById(`livros-${categoria}`);
+    if (container.style.display === 'none' || container.style.display === '') {
+        container.style.display = 'block';
+    } else {
+        container.style.display = 'none';
+    }
+}
+
+// Calcular totais ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+    calcularTotais();
+    calcularTotaisBahais();
+    calcularTotaisLivros();
+});
+
+// Validação do formulário
+document.getElementById('formHistorico').addEventListener('submit', function(e) {
+    const totalAtividades = parseInt(document.getElementById('totalAtividades').textContent);
+    const totalParticipantes = parseInt(document.getElementById('totalParticipantes').textContent);
+    
+    if (totalAtividades === 0 && totalParticipantes === 0) {
+        e.preventDefault();
+        alert('Por favor, preencha pelo menos um campo de atividades ou participantes.');
+        return false;
+    }
+    
+    return true;
+});
+
+// Teste de debug para verificar mapeamento
+function testarMapeamento() {
+    console.log('🧪 Testando mapeamento de categorias:');
+    const categoriaMap = {
+        'Sequência': 'sequencia',
+        'ABC': 'abc',
+        'Pré-jovens': 'prejovens',
+        'Outros': 'outros'
+    };
+    
+    for (const [categoria, backend] of Object.entries(categoriaMap)) {
+        console.log(`  "${categoria}" -> "${backend}"`);
+        console.log(`  Campo seria: livro_${backend}_1_nome`);
+    }
+}
+
+// Adicionar log antes do submit
+document.addEventListener('DOMContentLoaded', function() {
+    // Executar teste de mapeamento
+    testarMapeamento();
+    
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            console.log('📋 Campos do formulário sendo enviados:');
+            const formData = new FormData(form);
+            for (let [key, value] of formData.entries()) {
+                if (key.includes('livro_')) {
+                    console.log(`  ${key}: "${value}"`);
+                }
+            }
+        });
+    }
+    
+    {% if livros_existentes %}
+        {% for categoria, livros in livros_existentes.items %}
+            {% for livro in livros %}
+                adicionarLivroExistente('{{ categoria|title }}', '{{ livro.nome }}', {{ livro.iniciados }}, {{ livro.concluidos }}, '{{ livro.observacoes|default:"" }}');
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+    
+    calcularTotaisLivros();
+});
+
+function adicionarLivroExistente(categoria, nome, iniciados, concluidos, observacoes) {
+    contadorLivros++;
+    const container = document.getElementById(`livros-${categoria}`);
+    
+    // Mapear nomes de categoria para lowercase usado no backend
+    const categoriaMap = {
+        'Sequência': 'sequencia',
+        'ABC': 'abc',
+        'Pré-jovens': 'prejovens',
+        'Outros': 'outros'
+    };
+    const categoriaBackend = categoriaMap[categoria] || categoria.toLowerCase();
+    
+    const livroDiv = document.createElement('div');
+    livroDiv.className = 'row mb-2 align-items-center bg-light p-2 rounded';
+    livroDiv.id = `livro-${categoria}-${contadorLivros}`;
+    
+    livroDiv.innerHTML = `
+        <div class="col-md-3">
+            <input type="text" name="livro_${categoriaBackend}_${contadorLivros}_nome" 
+                   class="form-control form-control-sm" placeholder="Ex: Livro 1, Série 2" value="${nome}" required>
+        </div>
+        <div class="col-md-3">
+            <input type="number" name="livro_${categoriaBackend}_${contadorLivros}_iniciados" 
+                   class="form-control form-control-sm" min="0" placeholder="Iniciados" value="${iniciados}" onchange="calcularTotaisLivros()">
+        </div>
+        <div class="col-md-3">
+            <input type="number" name="livro_${categoriaBackend}_${contadorLivros}_concluidos" 
+                   class="form-control form-control-sm" min="0" placeholder="Concluídos" value="${concluidos}" onchange="calcularTotaisLivros()">
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="livro_${categoriaBackend}_${contadorLivros}_observacoes" 
+                   class="form-control form-control-sm" placeholder="Obs..." value="${observacoes}">
+        </div>
+        <div class="col-md-1">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerLivro('livro-${categoria}-${contadorLivros}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    
+    container.appendChild(livroDiv);
+    
+    // Se é o primeiro livro da categoria, mostrar header
+    if (container.children.length === 1) {
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'row mb-2 fw-bold text-muted';
+        headerDiv.innerHTML = `
+            <div class="col-md-3">Nome do Livro</div>
+            <div class="col-md-3">Iniciados</div>
+            <div class="col-md-3">Concluídos</div>
+            <div class="col-md-2">Observações</div>
+            <div class="col-md-1">Ação</div>
+        `;
+        container.insertBefore(headerDiv, livroDiv);
+    }
+}
+</script>
+{% endblock %}

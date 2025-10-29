@@ -1,0 +1,299 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="responsive-table">
+    <table class="contacts-table">
+        <caption class="table-caption">
+            {{ livro }} - Detalhes e Estudantes
+            <div class="caption-actions">
+                <a href="{% url 'contact:livro_list' %}" class="btn btn-link">← Voltar para Livros</a>
+                <a href="{% url 'contact:index' %}" class="btn btn-link">Ver Contatos</a>
+            </div>
+        </caption>
+        <thead>
+            <tr class="table-row table-row-header">
+                <th class="table-header">Informação</th>
+                <th class="table-header">Detalhes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="table-row">
+                <td class="table-cel"><strong>Número do Livro</strong></td>
+                <td class="table-cel">{{ livro.numero }}</td>
+            </tr>
+            <tr class="table-row">
+                <td class="table-cel"><strong>Título</strong></td>
+                <td class="table-cel">{{ livro.titulo }}</td>
+            </tr>
+            {% if livro.descricao %}
+            <tr class="table-row">
+                <td class="table-cel"><strong>Descrição</strong></td>
+                <td class="table-cel">{{ livro.descricao }}</td>
+            </tr>
+            {% endif %}
+            <tr class="table-row">
+                <td class="table-cel"><strong>Status</strong></td>
+                <td class="table-cel">
+                    {% if livro.ativo %}
+                        <span class="status-active">Ativo</span>
+                    {% else %}
+                        <span class="status-inactive">Inativo</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr class="table-row">
+                <td class="table-cel"><strong>Estudantes Atuais</strong></td>
+                <td class="table-cel">
+                    {% if estudantes_atuais.count > 0 %}
+                        <span class="badge badge-primary">{{ estudantes_atuais.count }}</span>
+                    {% else %}
+                        <span class="text-muted">Nenhum</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr class="table-row">
+                <td class="table-cel"><strong>Estudantes que Concluíram</strong></td>
+                <td class="table-cel">
+                    {% if estudantes_concluidos.count > 0 %}
+                        <span class="badge badge-success">{{ estudantes_concluidos.count }}</span>
+                    {% else %}
+                        <span class="text-muted">Nenhum</span>
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Estudantes Atuais -->
+{% if estudantes_atuais.count > 0 %}
+<div class="responsive-table">
+    <table class="contacts-table">
+        <caption class="table-caption">
+            Estudantes Estudando Atualmente
+        </caption>
+        <thead>
+            <tr class="table-row table-row-header">
+                <th class="table-header">Nome</th>
+                <th class="table-header">Status</th>
+                <th class="table-header">Data Início</th>
+                <th class="table-header">Dias Estudando</th>
+                <th class="table-header">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contato in estudantes_atuais %}
+            <tr class="table-row">
+                <td class="table-cel">
+                    <a class="table-link" href="{% url 'contact:contact' contato.pk %}">
+                        <strong>{{ contato.first_name }} {{ contato.last_name }}</strong>
+                    </a>
+                </td>
+                <td class="table-cel">
+                    {% if contato.status_estudo == 'em_andamento' %}
+                        <span class="badge badge-primary">{{ contato.get_status_estudo_display }}</span>
+                    {% elif contato.status_estudo == 'pausado' %}
+                        <span class="badge badge-warning">{{ contato.get_status_estudo_display }}</span>
+                    {% else %}
+                        <span class="badge badge-secondary">{{ contato.get_status_estudo_display }}</span>
+                    {% endif %}
+                </td>
+                <td class="table-cel">
+                    {% if contato.data_inicio_estudo %}
+                        {{ contato.data_inicio_estudo|date:"d/m/Y" }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td class="table-cel">
+                    {% if contato.dias_estudando_atual %}
+                        {{ contato.dias_estudando_atual }} dias
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td class="table-cel">
+                    <div class="action-buttons">
+                        <a href="{% url 'contact:contact' contato.pk %}" class="btn btn-link btn-sm" title="Ver Contato">
+                            Ver
+                        </a>
+                        <a href="{% url 'contact:gerenciar_estudos' contato.pk %}" class="btn btn-link btn-sm" title="Gerenciar Estudos">
+                            Gerenciar Estudos
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Estudantes que Concluíram -->
+{% if estudantes_concluidos.count > 0 %}
+<div class="responsive-table">
+    <table class="contacts-table">
+        <caption class="table-caption">
+            Estudantes que Concluíram o Livro
+        </caption>
+        <thead>
+            <tr class="table-row table-row-header">
+                <th class="table-header">Nome</th>
+                <th class="table-header">Data Conclusão</th>
+                <th class="table-header">Duração</th>
+                <th class="table-header">Observações</th>
+                <th class="table-header">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contato in estudantes_concluidos %}
+                {% for historico in contato.historico_estudos.all %}
+                    {% if historico.livro == livro %}
+                    <tr class="table-row">
+                        <td class="table-cel">
+                            <a class="table-link" href="{% url 'contact:contact' contato.pk %}">
+                                <strong>{{ contato.first_name }} {{ contato.last_name }}</strong>
+                            </a>
+                        </td>
+                        <td class="table-cel">
+                            {% if historico.data_termino %}
+                                {{ historico.data_termino|date:"d/m/Y" }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="table-cel">
+                            {% if historico.duracao_estudo %}
+                                {{ historico.duracao_estudo }} dias
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="table-cel">
+                            {% if historico.observacoes %}
+                                {{ historico.observacoes|truncatewords:10 }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="table-cel">
+                            <div class="action-buttons">
+                                <a href="{% url 'contact:contact' contato.pk %}" class="btn btn-link btn-sm" title="Ver Contato">
+                                    Ver
+                                </a>
+                                <a href="{% url 'contact:gerenciar_estudos' contato.pk %}" class="btn btn-link btn-sm" title="Gerenciar Estudos">
+                                    Gerenciar Estudos
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Estado vazio se não há estudantes -->
+{% if estudantes_atuais.count == 0 and estudantes_concluidos.count == 0 %}
+<div class="responsive-table">
+    <table class="contacts-table">
+        <caption class="table-caption">
+            Estudantes
+        </caption>
+        <tbody>
+            <tr>
+                <td class="table-cel text-center">
+                    <div class="empty-state">
+                        <p>Nenhum estudante registrado para este livro.</p>
+                        <a href="{% url 'contact:index' %}" class="btn btn-link">
+                            Ver Contatos para Atribuir Estudos
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<style>
+.badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+}
+
+.badge-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.badge-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.status-active {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.status-inactive {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+.caption-actions {
+    margin-top: 0.5rem;
+}
+
+.caption-actions .btn {
+    margin-left: 0.5rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.responsive-table + .responsive-table {
+    margin-top: 2rem;
+}
+</style>
+{% endblock %}

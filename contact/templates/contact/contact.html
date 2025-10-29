@@ -87,6 +87,80 @@
     </p>
     {% endif %}
 
+    {# Estudos Atuais do Instituto Ruhi #}
+    {% if contact.todos_estudos_atuais %}
+    <div class="current-studies">
+        <h4>Estudos Atuais do Instituto Ruhi</h4>
+        {% for estudo in contact.todos_estudos_atuais %}
+        <div class="current-study">
+            <p><strong>{{ estudo.livro }}</strong>
+                {% if estudo.status == 'em_andamento' %}
+                    <span class="status-badge status-progress">Em andamento</span>
+                    {% if estudo.data_inicio %}
+                        <small> (iniciado em {{ estudo.data_inicio|date:"d/m/Y" }})</small>
+                    {% endif %}
+                {% elif estudo.status == 'pausado' %}
+                    <span class="status-badge status-paused">Pausado</span>
+                {% endif %}
+            </p>
+            {% if estudo.observacoes %}
+                <p><small><em>Observações:</em> {{ estudo.observacoes|linebreaksbr }}</small></p>
+            {% endif %}
+            {% if estudo.dias_estudando %}
+                <p><small>Estudando há {{ estudo.dias_estudando }} dias</small></p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# Estudo Atual Antigo (para compatibilidade) #}
+    {% if contact.livro_estudando and not contact.todos_estudos_atuais %}
+    <p><b>Estudo atual do Instituto Ruhi:</b>
+        <a href="{% url 'contact:livro_detail' contact.livro_estudando.id %}">{{ contact.livro_estudando }}</a>
+        {% if contact.status_estudo == 'em_andamento' %}
+            <span class="status-badge status-progress">Em andamento</span>
+            {% if contact.data_inicio_estudo %}
+                <small> (iniciado em {{ contact.data_inicio_estudo|date:"d/m/Y" }})</small>
+            {% endif %}
+        {% elif contact.status_estudo == 'pausado' %}
+            <span class="status-badge status-paused">Pausado</span>
+        {% elif contact.status_estudo == 'concluido' %}
+            <span class="status-badge status-completed">Concluído</span>
+            {% if contact.data_termino_estudo %}
+                <small> (concluído em {{ contact.data_termino_estudo|date:"d/m/Y" }})</small>
+            {% endif %}
+        {% endif %}
+    </p>
+    {% if contact.observacoes_estudo %}
+        <p><b>Observações do estudo:</b> {{ contact.observacoes_estudo|linebreaksbr }}</p>
+    {% endif %}
+    {% endif %}
+
+    {# Histórico de Livros Concluídos #}
+    {% if contact.livros_concluidos %}
+    <div class="study-history">
+        <h4>Livros Concluídos do Instituto Ruhi</h4>
+        {% for historico in contact.livros_concluidos %}
+        <div class="completed-book">
+            <p><strong>{{ historico.livro }}</strong>
+                <span class="status-badge status-completed">Concluído</span>
+            </p>
+            {% if historico.data_inicio and historico.data_termino %}
+                <p><small>Período: {{ historico.data_inicio|date:"d/m/Y" }} a {{ historico.data_termino|date:"d/m/Y" }}
+                {% if historico.duracao_estudo %}
+                    ({{ historico.duracao_estudo }} dias)
+                {% endif %}
+                </small></p>
+            {% endif %}
+            {% if historico.observacoes %}
+                <p><small><em>Observações:</em> {{ historico.observacoes|truncatewords:20 }}</small></p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {% if contact.picture %}
         <p>
             <img src="{{contact.picture.url}}" alt="{{contact.first_name}} {{contact.last_name}}">
@@ -95,6 +169,7 @@
 
     <div class="contact-links">
         <a class="btn btn-link" href="{% url "contact:update" contact.id %}">Edit</a>
+        <a class="btn btn-link" href="{% url "contact:gerenciar_estudos" contact.id %}">Gerenciar Estudos</a>
         <form action="{% url "contact:delete" contact.id %}" method="POST">
             {% csrf_token %}
             {% if confirmation == 'no' %}
@@ -106,4 +181,102 @@
         </form>
     </div>
 </div>
+
+<style>
+.status-badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+    margin-left: 0.5rem;
+}
+
+.status-progress {
+    background-color: #007bff;
+    color: white;
+}
+
+.status-paused {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.status-completed {
+    background-color: #28a745;
+    color: white;
+}
+
+.study-history {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    border: 1px solid #e9ecef;
+}
+
+.study-history h4 {
+    margin-bottom: 1rem;
+    color: #495057;
+    font-size: 1.1rem;
+}
+
+.completed-book {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background-color: white;
+    border-radius: 0.25rem;
+    border-left: 4px solid #28a745;
+}
+
+.completed-book:last-child {
+    margin-bottom: 0;
+}
+
+.completed-book p {
+    margin-bottom: 0.5rem;
+}
+
+.completed-book p:last-child {
+    margin-bottom: 0;
+}
+
+.current-studies {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #e7f3ff;
+    border-radius: 0.5rem;
+    border: 1px solid #bee5eb;
+}
+
+.current-studies h4 {
+    margin-bottom: 1rem;
+    color: #0c5460;
+    font-size: 1.1rem;
+}
+
+.current-study {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background-color: white;
+    border-radius: 0.25rem;
+    border-left: 4px solid #007bff;
+}
+
+.current-study:last-child {
+    margin-bottom: 0;
+}
+
+.current-study p {
+    margin-bottom: 0.5rem;
+}
+
+.current-study p:last-child {
+    margin-bottom: 0;
+}
+</style>
 {% endblock content %}

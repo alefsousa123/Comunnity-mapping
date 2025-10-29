@@ -1,6 +1,12 @@
 {% extends "global/base.html" %}
 {% block content %}
 <h1>{{site_title}}</h1>
+  {% if redirect_to_familia %}
+    <div class="alert alert-info" style="background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; padding: 10px; margin-bottom: 20px; border-radius: 5px;">
+      <strong>Informação:</strong> Após criar esta rua, você retornará ao formulário de família e a rua será automaticamente selecionada.
+    </div>
+  {% endif %}
+
 <div class="form-wrapper">
   <form method="post">
     {% csrf_token %}
@@ -23,8 +29,11 @@
       </div>
     {% endfor %}
     <div class="form-content">
-      <div class="form-group">
+      <div class="form-group btn-container">
         <button class="btn" type="submit">Salvar</button>
+        {% if redirect_to_familia %}
+          <a href="javascript:window.close();" class="btn btn-secondary">Cancelar</a>
+        {% endif %}
       </div>
     </div>
   </form>

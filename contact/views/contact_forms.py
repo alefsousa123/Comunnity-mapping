@@ -11,6 +11,10 @@ from django.core.paginator import Paginator
 def create(request):
     form_action = reverse("contact:create")
     site_title = "Criar Contato"
+    
+    # Verificar se viemos do formulário de família
+    redirect_to_familia = request.GET.get('redirect_to_familia') == 'true'
+    
     if request.method == "POST":
         form = ContactForm(request.POST, request.FILES, user=request.user)
         context = {
@@ -22,6 +26,11 @@ def create(request):
             contact = form.save(commit=False)
             contact.owner = request.user
             contact.save()
+            
+            # Se viemos do formulário de família, redirecionar de volta
+            if redirect_to_familia:
+                return redirect(f"{reverse('contact:familia_create')}?new_contact_id={contact.id}")
+            
             return redirect("contact:index")
         return render(
             request,
@@ -33,6 +42,7 @@ def create(request):
         'form': ContactForm(user=request.user),
         'form_action': form_action,
         'site_title': site_title,
+        'redirect_to_familia': redirect_to_familia,
     }
     return render(
         request,

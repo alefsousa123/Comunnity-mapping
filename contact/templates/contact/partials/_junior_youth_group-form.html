@@ -1,4 +1,5 @@
 {% extends "global/base.html" %}
+{% load static %}
 {% block content %}
 <h1>{{site_title}}</h1>
 <div class="form-wrapper">
@@ -167,4 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+
+<!-- Carregar JavaScript de seleção de ciclos -->
+<script src="{% static 'global/js/cycle-selector.js' %}"></script>
 {% endblock %}

@@ -1,0 +1,155 @@
+{% extends "global/base.html" %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>{{ titulo }}
+                    </h3>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.titulo_plano.id_for_label }}" class="form-label">
+                                    {{ form.titulo_plano.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.titulo_plano }}
+                                {% if form.titulo_plano.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.titulo_plano.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.data_inicio_plano.id_for_label }}" class="form-label">
+                                    {{ form.data_inicio_plano.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.data_inicio_plano }}
+                                {% if form.data_inicio_plano.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.data_inicio_plano.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.descricao.id_for_label }}" class="form-label">
+                                {{ form.descricao.label }}
+                            </label>
+                            {{ form.descricao }}
+                            {% if form.descricao.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.descricao.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.duracao_ciclo_meses.id_for_label }}" class="form-label">
+                                    {{ form.duracao_ciclo_meses.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.duracao_ciclo_meses }}
+                                <div class="form-text">
+                                    Duração de cada ciclo em meses (ex: 3 para trimestral)
+                                </div>
+                                {% if form.duracao_ciclo_meses.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.duracao_ciclo_meses.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.total_ciclos_plano.id_for_label }}" class="form-label">
+                                    {{ form.total_ciclos_plano.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.total_ciclos_plano }}
+                                <div class="form-text">
+                                    Número total de ciclos do plano
+                                </div>
+                                {% if form.total_ciclos_plano.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.total_ciclos_plano.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.principal }}
+                                <label class="form-check-label" for="{{ form.principal.id_for_label }}">
+                                    {{ form.principal.label }}
+                                </label>
+                                {% if form.principal.help_text %}
+                                    <div class="form-text">{{ form.principal.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            {% if form.principal.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.principal.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'gerenciar_planos_ciclos' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>{{ action }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Adicionar classes CSS aos campos do formulário
+document.addEventListener('DOMContentLoaded', function() {
+    // Adicionar classes Bootstrap aos campos de input
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="date"], textarea, select');
+    inputs.forEach(input => {
+        input.classList.add('form-control');
+    });
+    
+    // Tratar checkbox especialmente
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.classList.add('form-check-input');
+    });
+});
+</script>
+{% endblock %}

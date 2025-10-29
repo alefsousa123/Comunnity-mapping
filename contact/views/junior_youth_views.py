@@ -1,8 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from contact.models import GrupoPreJovens
 from contact.forms import GrupoPreJovensForm
+from contact.mixins import HistoricoAutomaticoMixin
+
+
+class JuniorYouthHistoricoMixin(HistoricoAutomaticoMixin):
+    """Mixin específico para views de grupos de pré-jovens"""
+    pass
 
 @login_required(login_url="contact:login")
 def junior_youth_list(request):
@@ -27,6 +34,8 @@ def junior_youth_detail(request, pk):
 
 @login_required(login_url="contact:login")
 def junior_youth_create(request):
+    historico_mixin = JuniorYouthHistoricoMixin()
+    
     if request.method == "POST":
         form = GrupoPreJovensForm(request.POST, user=request.user)
         if form.is_valid():
@@ -34,6 +43,21 @@ def junior_youth_create(request):
             grupo.owner = request.user
             grupo.save()
             form.save_m2m()
+            
+            # Verificar se deve salvar no histórico
+            ciclo_selecionado = form.cleaned_data.get('numero_ciclo_criacao')
+            historico = historico_mixin.salvar_no_historico_se_necessario(
+                grupo, ciclo_selecionado
+            )
+            
+            if historico:
+                messages.success(
+                    request,
+                    f'Grupo "{grupo.nome}" criado e adicionado ao histórico do ciclo {ciclo_selecionado}!'
+                )
+            else:
+                messages.success(request, f'Grupo "{grupo.nome}" criado com sucesso!')
+            
             return redirect("contact:grupoprejovens_detail", grupo.id)
     else:
         form = GrupoPreJovensForm(user=request.user)

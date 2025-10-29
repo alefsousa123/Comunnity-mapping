@@ -1,0 +1,221 @@
+{% extends "global/base.html" %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>{{ titulo }}
+                    </h3>
+                    <a href="{% url 'criar_plano_ciclo' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Novo Plano
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                    {% if planos %}
+                        <div class="row">
+                            {% for plano in planos %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100 {% if plano.principal %}border-primary{% endif %}">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="card-title mb-0">
+                                            {{ plano.titulo_plano }}
+                                            {% if plano.principal %}
+                                                <span class="badge bg-primary ms-1">Principal</span>
+                                            {% endif %}
+                                        </h5>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                    type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'editar_plano_ciclo' plano.id %}">
+                                                        <i class="fas fa-edit me-2"></i>Editar
+                                                    </a>
+                                                </li>
+                                                {% if not plano.principal %}
+                                                <li>
+                                                    <form method="post" action="{% url 'alternar_plano_principal' plano.id %}" 
+                                                          style="margin: 0;">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="dropdown-item">
+                                                            <i class="fas fa-star me-2"></i>Tornar Principal
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                {% endif %}
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <button class="dropdown-item text-danger" 
+                                                            onclick="confirmarExclusao({{ plano.id }}, '{{ plano.titulo_plano }}')">
+                                                        <i class="fas fa-trash me-2"></i>Excluir
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card-body">
+                                        {% if plano.descricao %}
+                                            <p class="card-text text-muted">{{ plano.descricao|truncatewords:15 }}</p>
+                                        {% endif %}
+                                        
+                                        <div class="row text-center">
+                                            <div class="col-6">
+                                                <div class="border-end">
+                                                    <h6 class="text-primary mb-1">{{ plano.ciclo_atual }}</h6>
+                                                    <small class="text-muted">Ciclo Atual</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <h6 class="text-success mb-1">{{ plano.total_ciclos }}</h6>
+                                                <small class="text-muted">Total Ciclos</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <hr>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar me-1"></i>
+                                                Iniciado em {{ plano.data_inicio_plano|date:"d/m/Y" }}
+                                            </small>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>
+                                                {{ plano.duracao_ciclo_meses }} meses/ciclo
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card-footer">
+                                        <button class="btn btn-outline-info btn-sm w-100" 
+                                                onclick="verDetalhes({{ plano.id }})">
+                                            <i class="fas fa-info-circle me-1"></i>Ver Detalhes
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhum plano de ciclos encontrado</h5>
+                            <p class="text-muted">Crie seu primeiro plano para começar a organizar seus ciclos.</p>
+                            <a href="{% url 'criar_plano_ciclo' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Criar Primeiro Plano
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para detalhes do plano -->
+<div class="modal fade" id="detalhesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes do Plano</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detalhesContent">
+                <!-- Conteúdo carregado via AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para confirmação de exclusão -->
+<div class="modal fade" id="confirmarExclusaoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o plano <strong id="nomePlayoExclusao"></strong>?</p>
+                <p class="text-warning">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Esta ação não pode ser desfeita.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formExclusao" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function verDetalhes(planoId) {
+    // Carregar detalhes via AJAX
+    fetch(`/ciclos/plano/${planoId}/info/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const plano = data.plano;
+                const atividades = plano.atividades;
+                
+                const conteudo = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle me-2"></i>Informações Gerais</h6>
+                            <table class="table table-sm">
+                                <tr><th>Título:</th><td>${plano.titulo}</td></tr>
+                                <tr><th>Descrição:</th><td>${plano.descricao || 'Não informada'}</td></tr>
+                                <tr><th>Data de Início:</th><td>${plano.data_inicio_plano}</td></tr>
+                                <tr><th>Duração por Ciclo:</th><td>${plano.duracao_ciclo_meses} meses</td></tr>
+                                <tr><th>Total de Ciclos:</th><td>${plano.total_ciclos_plano}</td></tr>
+                                <tr><th>Ciclo Atual:</th><td>${plano.ciclo_atual}</td></tr>
+                                <tr><th>Principal:</th><td>${plano.principal ? 'Sim' : 'Não'}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-tasks me-2"></i>Atividades Vinculadas</h6>
+                            <table class="table table-sm">
+                                <tr><th>Grupos de Pré-Jovens:</th><td>${atividades.grupos_prejovens}</td></tr>
+                                <tr><th>Aulas de Crianças:</th><td>${atividades.aulas_criancas}</td></tr>
+                                <tr><th>Círculos de Estudo:</th><td>${atividades.circulos_estudo}</td></tr>
+                                <tr><th>Estudos Atuais:</th><td>${atividades.estudos_atuais}</td></tr>
+                                <tr><th>Histórico de Estudos:</th><td>${atividades.historicos_estudo}</td></tr>
+                                <tr class="table-info"><th>Total:</th><td><strong>${plano.total_atividades}</strong></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('detalhesContent').innerHTML = conteudo;
+                new bootstrap.Modal(document.getElementById('detalhesModal')).show();
+            } else {
+                alert('Erro ao carregar detalhes: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao carregar detalhes do plano.');
+        });
+}
+
+function confirmarExclusao(planoId, nomePlano) {
+    document.getElementById('nomePlayoExclusao').textContent = nomePlano;
+    document.getElementById('formExclusao').action = `/ciclos/plano/${planoId}/excluir/`;
+    new bootstrap.Modal(document.getElementById('confirmarExclusaoModal')).show();
+}
+</script>
+{% endblock %}

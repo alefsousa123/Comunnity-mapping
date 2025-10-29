@@ -1,0 +1,350 @@
+{% extends "global/base.html" %}
+
+{% block title %}Configurações dos Ciclos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-cog"></i> Configurações dos Planos de Ciclos
+                    </h4>
+                    <span class="badge bg-light text-dark">{{ total_planos }} plano(s)</span>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Tabs para diferentes seções -->
+                    <ul class="nav nav-tabs" id="configTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="planos-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#planos" type="button" role="tab">
+                                <i class="fas fa-list"></i> Gerenciar Planos
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="novo-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#novo" type="button" role="tab">
+                                <i class="fas fa-plus"></i> Novo Plano
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content mt-3" id="configTabsContent">
+                        <!-- Tab 1: Lista de Planos -->
+                        <div class="tab-pane fade show active" id="planos" role="tabpanel">
+                            <div class="row">
+                                {% for plano in todos_planos %}
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100 {% if plano.principal %}border-primary{% endif %}">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="card-title mb-0">
+                                                {{ plano.titulo_plano }}
+                                                {% if plano.principal %}
+                                                    <span class="badge bg-primary ms-1">Principal</span>
+                                                {% endif %}
+                                            </h6>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                        type="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <button class="dropdown-item" 
+                                                                onclick="editarPlano({{ plano.id }}, '{{ plano.titulo_plano }}', '{{ plano.descricao }}', '{{ plano.data_inicio_plano|date:'Y-m-d' }}', {{ plano.duracao_ciclo_meses }}, {{ plano.total_ciclos_plano }}, {{ plano.ativo|yesno:'true,false' }}, {{ plano.principal|yesno:'true,false' }})">
+                                                            <i class="fas fa-edit me-2"></i>Editar
+                                                        </button>
+                                                    </li>
+                                                    {% if not plano.principal %}
+                                                    <li>
+                                                        <form method="post" style="margin: 0;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="action" value="definir_principal">
+                                                            <input type="hidden" name="plano_id" value="{{ plano.id }}">
+                                                            <button type="submit" class="dropdown-item">
+                                                                <i class="fas fa-star me-2"></i>Tornar Principal
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <button class="dropdown-item text-danger" 
+                                                                onclick="excluirPlano({{ plano.id }}, '{{ plano.titulo_plano }}')">
+                                                            <i class="fas fa-trash me-2"></i>Excluir
+                                                        </button>
+                                                    </li>
+                                                    {% endif %}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card-body">
+                                            {% if plano.descricao %}
+                                                <p class="card-text text-muted small">{{ plano.descricao|truncatewords:10 }}</p>
+                                            {% endif %}
+                                            
+                                            <div class="row text-center">
+                                                <div class="col-6">
+                                                    <div class="border-end">
+                                                        <h6 class="text-primary mb-1">{{ plano.calcular_ciclo_atual }}</h6>
+                                                        <small class="text-muted">Ciclo Atual</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <h6 class="text-success mb-1">{{ plano.total_ciclos_plano }}</h6>
+                                                    <small class="text-muted">Total Ciclos</small>
+                                                </div>
+                                            </div>
+                                            
+                                            <hr>
+                                            
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    {{ plano.data_inicio_plano|date:"d/m/Y" }}
+                                                </small>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    {{ plano.duracao_ciclo_meses }}m/ciclo
+                                                </small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card-footer">
+                                            {% if plano.ativo %}
+                                                <span class="badge bg-success w-100">Ativo</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary w-100">Inativo</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="col-12 text-center py-5">
+                                    <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Nenhum plano encontrado</h5>
+                                    <p class="text-muted">Crie seu primeiro plano na aba "Novo Plano".</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Tab 2: Criar Novo Plano -->
+                        <div class="tab-pane fade" id="novo" role="tabpanel">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="criar_plano">
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form_novo_plano.titulo_plano.id_for_label }}" class="form-label">
+                                                <strong>{{ form_novo_plano.titulo_plano.label }}:</strong>
+                                            </label>
+                                            {{ form_novo_plano.titulo_plano }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form_novo_plano.data_inicio_plano.id_for_label }}" class="form-label">
+                                                <strong>{{ form_novo_plano.data_inicio_plano.label }}:</strong>
+                                            </label>
+                                            {{ form_novo_plano.data_inicio_plano }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="{{ form_novo_plano.descricao.id_for_label }}" class="form-label">
+                                        <strong>{{ form_novo_plano.descricao.label }}:</strong>
+                                    </label>
+                                    {{ form_novo_plano.descricao }}
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form_novo_plano.duracao_ciclo_meses.id_for_label }}" class="form-label">
+                                                <strong>{{ form_novo_plano.duracao_ciclo_meses.label }}:</strong>
+                                            </label>
+                                            {{ form_novo_plano.duracao_ciclo_meses }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="{{ form_novo_plano.total_ciclos_plano.id_for_label }}" class="form-label">
+                                                <strong>{{ form_novo_plano.total_ciclos_plano.label }}:</strong>
+                                            </label>
+                                            {{ form_novo_plano.total_ciclos_plano }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check mb-4">
+                                    {{ form_novo_plano.principal }}
+                                    <label class="form-check-label" for="{{ form_novo_plano.principal.id_for_label }}">
+                                        <strong>{{ form_novo_plano.principal.label }}</strong>
+                                    </label>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Criar Plano
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'contact:dashboard_estatisticas' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar às Estatísticas
+                        </a>
+                        <small class="text-muted">
+                            Plano Principal: <strong>{{ plano_principal.titulo_plano }}</strong>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Editar Plano -->
+<div class="modal fade" id="editarPlanoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Plano</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="formEditarPlano">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="editar_plano">
+                    <input type="hidden" name="plano_id" id="editPlanoId">
+                    
+                    <div class="form-group mb-3">
+                        <label for="editTituloPlano" class="form-label"><strong>Título do Plano:</strong></label>
+                        <input type="text" class="form-control" id="editTituloPlano" name="titulo_plano" required>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="editDescricao" class="form-label"><strong>Descrição:</strong></label>
+                        <textarea class="form-control" id="editDescricao" name="descricao" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="editDataInicio" class="form-label"><strong>Data de Início:</strong></label>
+                                <input type="date" class="form-control" id="editDataInicio" name="data_inicio_plano" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="editDuracaoCiclo" class="form-label"><strong>Duração do Ciclo (meses):</strong></label>
+                                <select class="form-select" id="editDuracaoCiclo" name="duracao_ciclo_meses">
+                                    <option value="1">1 mês</option>
+                                    <option value="2">2 meses</option>
+                                    <option value="3">3 meses</option>
+                                    <option value="4">4 meses</option>
+                                    <option value="6">6 meses</option>
+                                    <option value="12">12 meses</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="editTotalCiclos" class="form-label"><strong>Total de Ciclos:</strong></label>
+                        <input type="number" class="form-control" id="editTotalCiclos" name="total_ciclos_plano" min="1" max="100" required>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="editAtivo" name="ativo">
+                        <label class="form-check-label" for="editAtivo"><strong>Plano ativo</strong></label>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="editPrincipal" name="principal">
+                        <label class="form-check-label" for="editPrincipal"><strong>Plano principal</strong></label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Confirmação de Exclusão -->
+<div class="modal fade" id="excluirPlanoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o plano <strong id="nomePlayoExclusao"></strong>?</p>
+                <p class="text-warning">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Esta ação não pode ser desfeita e todas as atividades vinculadas perderão a referência ao plano.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" id="formExcluirPlano" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="excluir_plano">
+                    <input type="hidden" name="plano_id" id="excluirPlanoId">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Adicionar classes CSS aos campos do formulário
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="date"], textarea, select');
+    inputs.forEach(input => {
+        input.classList.add('form-control');
+    });
+    
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.classList.add('form-check-input');
+    });
+});
+
+function editarPlano(id, titulo, descricao, dataInicio, duracao, totalCiclos, ativo, principal) {
+    document.getElementById('editPlanoId').value = id;
+    document.getElementById('editTituloPlano').value = titulo;
+    document.getElementById('editDescricao').value = descricao;
+    document.getElementById('editDataInicio').value = dataInicio;
+    document.getElementById('editDuracaoCiclo').value = duracao;
+    document.getElementById('editTotalCiclos').value = totalCiclos;
+    document.getElementById('editAtivo').checked = ativo;
+    document.getElementById('editPrincipal').checked = principal;
+    
+    new bootstrap.Modal(document.getElementById('editarPlanoModal')).show();
+}
+
+function excluirPlano(id, nome) {
+    document.getElementById('nomePlayoExclusao').textContent = nome;
+    document.getElementById('excluirPlanoId').value = id;
+    new bootstrap.Modal(document.getElementById('excluirPlanoModal')).show();
+}
+</script>
+{% endblock %}

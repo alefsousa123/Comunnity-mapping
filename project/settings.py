@@ -126,6 +126,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Configurações de autenticação
+LOGIN_URL = '/user/login'
+LOGIN_REDIRECT_URL = '/'
+
 
 try:
     from .local_settings import *  # noqa: F401, F403

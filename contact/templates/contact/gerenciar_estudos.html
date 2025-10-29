@@ -1,0 +1,567 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="responsive-table">
+    <table class="contacts-table">
+        <caption class="table-caption">
+            Gerenciar Estudos - {{ contato.first_name }} {{ contato.last_name }}
+            <div class="caption-actions">
+                <a href="{% url 'contact:contact' contato.pk %}" class="btn btn-link">← Voltar para Contato</a>
+                <a href="{% url 'contact:index' %}" class="btn btn-link">Ver Contatos</a>
+            </div>
+        </caption>
+        
+        <!-- Estudos Atuais -->
+        {% if contato.todos_estudos_atuais %}
+        <thead>
+            <tr class="table-row table-row-header">
+                <th class="table-header">Livro</th>
+                <th class="table-header">Status</th>
+                <th class="table-header">Data Início</th>
+                <th class="table-header">Dias Estudando</th>
+                <th class="table-header">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estudo in contato.todos_estudos_atuais %}
+            <tr class="table-row">
+                <td class="table-cel">
+                    <a class="table-link" href="{% url 'contact:livro_detail' estudo.livro.pk %}">
+                        <strong>{{ estudo.livro }}</strong>
+                    </a>
+                </td>
+                <td class="table-cel">
+                    {% if estudo.status == 'em_andamento' %}
+                        <span class="badge badge-primary">Em Andamento</span>
+                    {% elif estudo.status == 'pausado' %}
+                        <span class="badge badge-warning">Pausado</span>
+                    {% endif %}
+                </td>
+                <td class="table-cel">
+                    {% if estudo.data_inicio %}
+                        {{ estudo.data_inicio|date:"d/m/Y" }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td class="table-cel">
+                    {% if estudo.dias_estudando %}
+                        {{ estudo.dias_estudando }} dias
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td class="table-cel">
+                    <div class="action-buttons">
+                        {% if estudo.status == 'em_andamento' %}
+                            <form method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="pausar">
+                                <input type="hidden" name="estudo_id" value="{{ estudo.pk }}">
+                                <button type="submit" class="btn btn-link btn-sm">Pausar</button>
+                            </form>
+                        {% elif estudo.status == 'pausado' %}
+                            <form method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="retomar">
+                                <input type="hidden" name="estudo_id" value="{{ estudo.pk }}">
+                                <button type="submit" class="btn btn-link btn-sm">Retomar</button>
+                            </form>
+                        {% endif %}
+                        
+                        <button type="button" class="btn btn-link btn-sm btn-success" onclick="concluirEstudo({{ estudo.pk }}, '{{ estudo.livro|escapejs }}')">
+                            Concluir
+                        </button>
+                        
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="remover">
+                            <input type="hidden" name="estudo_id" value="{{ estudo.pk }}">
+                            <button type="submit" class="btn btn-link btn-sm btn-delete" 
+                                    onclick="return confirm('Tem certeza que deseja remover este estudo?')">
+                                Remover
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% else %}
+        <tbody>
+            <tr>
+                <td colspan="5" class="table-cel text-center">
+                    <div class="empty-state">
+                        <p>{{ contato.first_name }} não tem estudos atuais.</p>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+        {% endif %}
+    </table>
+</div>
+
+<!-- Adicionar Novo Estudo -->
+{% if livros_disponiveis or categorias %}
+<div class="responsive-table">
+    <table class="contacts-table">
+        <caption class="table-caption">
+            Adicionar Novo Estudo
+        </caption>
+        <tbody>
+            <!-- Filtro por Categoria -->
+            <tr>
+                <td class="table-cel">
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h5 style="margin-bottom: 10px; color: #495057;">📂 Filtrar por Categoria</h5>
+                        <form method="get" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <select name="categoria" onchange="this.form.submit()" style="width: 100%; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; background-color: white;">
+                                    <option value="todos" {% if not categoria_selecionada or categoria_selecionada == 'todos' %}selected{% endif %}>
+                                        📚 Todas as Categorias
+                                    </option>
+                                    {% for categoria in categorias %}
+                                        <option value="{{ categoria.pk }}" {% if categoria_selecionada == categoria.pk|stringformat:"s" %}selected{% endif %}>
+                                            {% if categoria.cor %}
+                                                <span style="color: {{ categoria.cor }};">●</span>
+                                            {% endif %}
+                                            {{ categoria.nome }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div style="color: #6c757d; font-size: 0.9em;">
+                                {% if categoria_selecionada and categoria_selecionada != 'todos' %}
+                                    {% for categoria in categorias %}
+                                        {% if categoria.pk|stringformat:"s" == categoria_selecionada %}
+                                            Mostrando livros de: <strong>{{ categoria.nome }}</strong>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    Mostrando todos os livros disponíveis
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            
+            {% if livros_disponiveis %}
+            <tr>
+                <td class="table-cel">
+                    <form method="post" class="add-study-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="adicionar">
+                        
+                        <div class="form-group">
+                            <label for="livro_id">Selecionar Livro:</label>
+                            <select id="livro_id" name="livro_id" required>
+                                <option value="">Escolha um livro...</option>
+                                {% for livro in livros_disponiveis %}
+                                    <option value="{{ livro.pk }}">
+                                        {% if livro.categoria %}
+                                            [{{ livro.categoria.nome }}] 
+                                        {% endif %}
+                                        {{ livro }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="observacoes">Observações (opcional):</label>
+                            <textarea id="observacoes" name="observacoes" rows="2" placeholder="Observações sobre o estudo..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="plano_id">Plano de Ciclos:</label>
+                            <select id="plano_id" name="plano_id">
+                                <option value="">Usar plano principal</option>
+                                {% for plano in planos_disponiveis %}
+                                    <option value="{{ plano.pk }}" {% if plano.principal %}selected{% endif %}>
+                                        {{ plano.titulo_plano }}{% if plano.principal %} (Principal){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ciclo_criacao">Ciclo de Criação:</label>
+                            <select id="ciclo_criacao" name="ciclo_criacao">
+                                <option value="">Usar ciclo atual</option>
+                                <option value="1">Ciclo 1</option>
+                                <option value="2">Ciclo 2</option>
+                                <option value="3">Ciclo 3</option>
+                                <option value="4">Ciclo 4</option>
+                                <option value="5">Ciclo 5</option>
+                                <option value="6">Ciclo 6</option>
+                                <option value="7">Ciclo 7</option>
+                                <option value="8">Ciclo 8</option>
+                                <option value="9">Ciclo 9</option>
+                                <option value="10">Ciclo 10</option>
+                            </select>
+                            <small class="form-text text-muted">Ciclos disponíveis (temporário - será dinâmico)</small>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                Adicionar Estudo
+                            </button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td class="table-cel">
+                    <div style="text-align: center; padding: 20px; color: #6c757d;">
+                        {% if categoria_selecionada and categoria_selecionada != 'todos' %}
+                            <p>Nenhum livro disponível na categoria selecionada.</p>
+                            <p><a href="?categoria=todos">Ver todos os livros disponíveis</a></p>
+                        {% else %}
+                            <p>Todos os livros disponíveis já estão sendo estudados ou foram concluídos.</p>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="responsive-table">
+    <table class="contacts-table">
+        <caption class="table-caption">
+            Adicionar Novo Estudo
+        </caption>
+        <tbody>
+            <tr>
+                <td class="table-cel text-center">
+                    <div class="empty-state">
+                        <p>Não há livros disponíveis para adicionar.</p>
+                        <p><small>{{ contato.first_name }} já está estudando ou já concluiu todos os livros disponíveis.</small></p>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Histórico de Livros Concluídos -->
+{% if contato.livros_concluidos %}
+<div class="responsive-table">
+    <table class="contacts-table">
+        <caption class="table-caption">
+            Histórico de Livros Concluídos
+        </caption>
+        <thead>
+            <tr class="table-row table-row-header">
+                <th class="table-header">Livro</th>
+                <th class="table-header">Data Conclusão</th>
+                <th class="table-header">Duração</th>
+                <th class="table-header">Observações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for historico in contato.livros_concluidos %}
+            <tr class="table-row">
+                <td class="table-cel">
+                    <a class="table-link" href="{% url 'contact:livro_detail' historico.livro.pk %}">
+                        <strong>{{ historico.livro }}</strong>
+                    </a>
+                </td>
+                <td class="table-cel">
+                    {% if historico.data_termino %}
+                        {{ historico.data_termino|date:"d/m/Y" }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td class="table-cel">
+                    {% if historico.duracao_estudo %}
+                        {{ historico.duracao_estudo }} dias
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td class="table-cel">
+                    {% if historico.observacoes %}
+                        {{ historico.observacoes|truncatewords:10 }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Modal para Conclusão de Estudo -->
+<div id="concluirModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Concluir Estudo</h3>
+            <span class="close" onclick="fecharModal()">&times;</span>
+        </div>
+        <form method="post" id="concluirForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="concluir">
+            <input type="hidden" name="estudo_id" id="concluir_estudo_id">
+            
+            <div class="modal-body">
+                <p>Concluir estudo do livro: <strong id="concluir_livro_nome"></strong></p>
+                
+                <div class="form-group">
+                    <label for="observacoes_conclusao">Observações da conclusão (opcional):</label>
+                    <textarea id="observacoes_conclusao" name="observacoes_conclusao" rows="3" 
+                              placeholder="Observações sobre a conclusão do estudo..."></textarea>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Concluir Estudo</button>
+                <button type="button" class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+}
+
+.badge-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+.caption-actions {
+    margin-top: 0.5rem;
+}
+
+.caption-actions .btn {
+    margin-left: 0.5rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.btn-delete {
+    color: #dc3545 !important;
+}
+
+.btn-delete:hover {
+    color: #c82333 !important;
+    text-decoration: underline;
+}
+
+.btn-success {
+    color: #28a745 !important;
+}
+
+.btn-success:hover {
+    color: #1e7e34 !important;
+    text-decoration: underline;
+}
+
+.responsive-table + .responsive-table {
+    margin-top: 2rem;
+}
+
+.add-study-form {
+    padding: 2rem;
+    max-width: 600px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.form-actions {
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+    border-color: #4e555b;
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 0;
+    border-radius: 0.5rem;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #495057;
+}
+
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: black;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+</style>
+
+<script>
+function concluirEstudo(estudoId, livroNome) {
+    document.getElementById('concluir_estudo_id').value = estudoId;
+    document.getElementById('concluir_livro_nome').textContent = livroNome;
+    document.getElementById('observacoes_conclusao').value = '';
+    document.getElementById('concluirModal').style.display = 'block';
+}
+
+function fecharModal() {
+    document.getElementById('concluirModal').style.display = 'none';
+}
+
+// Fechar modal clicando fora dele
+window.onclick = function(event) {
+    const modal = document.getElementById('concluirModal');
+    if (event.target == modal) {
+        fecharModal();
+    }
+}
+</script>
+
+<!-- Carregar JavaScript de seleção de ciclos -->
+<script src="{% static 'global/js/cycle-selector.js' %}"></script>
+{% endblock %}

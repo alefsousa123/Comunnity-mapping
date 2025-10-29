@@ -1,8 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from contact.models import CirculoEstudo
 from contact.forms import CirculoEstudoForm
+from contact.mixins import HistoricoAutomaticoMixin
+
+
+class StudyCircleHistoricoMixin(HistoricoAutomaticoMixin):
+    """Mixin específico para views de círculos de estudo"""
+    pass
 
 @login_required(login_url="contact:login")
 def study_circle_list(request):
@@ -29,6 +36,8 @@ def study_circle_detail(request, pk):
 
 @login_required(login_url="contact:login")
 def study_circle_create(request):
+    historico_mixin = StudyCircleHistoricoMixin()
+    
     if request.method == "POST":
         form = CirculoEstudoForm(request.POST, user=request.user)
         if form.is_valid():
@@ -37,6 +46,21 @@ def study_circle_create(request):
             circulo.show = True  # se necessário
             circulo.save()
             form.save_m2m()  # se houver campos ManyToMany
+            
+            # Verificar se deve salvar no histórico
+            ciclo_selecionado = form.cleaned_data.get('numero_ciclo_criacao')
+            historico = historico_mixin.salvar_no_historico_se_necessario(
+                circulo, ciclo_selecionado
+            )
+            
+            if historico:
+                messages.success(
+                    request,
+                    f'Círculo "{circulo.nome}" criado e adicionado ao histórico do ciclo {ciclo_selecionado}!'
+                )
+            else:
+                messages.success(request, f'Círculo "{circulo.nome}" criado com sucesso!')
+            
             return redirect("contact:circuloestudo_list")
     else:
         form = CirculoEstudoForm(user=request.user)
